@@ -6,7 +6,7 @@ import { BookCard } from "@/components/catalogue/book-card";
 import { BookCardSkeleton } from "@/components/catalogue/book-card-skeleton";
 import { StateMessage } from "@/components/ui/state-message";
 import type { Book } from "@/domain/book";
-import { useBooks } from "@/features/catalogue/use-books.temp";
+import { useBooks } from "@/hooks/queries/use-books";
 
 const PAGE_SIZE = 20;
 
