@@ -3,7 +3,9 @@ import { useCallback } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { BookDetailCard } from "@/components/book-details/book-detail-card";
+import { DeleteBookControl } from "@/components/book-details/delete-book-control";
 import { isAppError } from "@/domain/app-error";
+import { useBookDeletion } from "@/features/books/use-book-deletion";
 import { useBook } from "@/hooks/queries/use-book";
 import { useToggleReadStatus } from "@/hooks/queries/use-book-mutations";
 import { lightColors, spacing } from "@/theme/tokens";
@@ -15,6 +17,7 @@ export default function BookDetailScreen() {
 
   const { data: book, isLoading, isError, error, refetch } = useBook(bookId);
   const toggleReadStatus = useToggleReadStatus();
+  const { performDelete, isDeleting } = useBookDeletion(bookId);
 
   const handleToggleRead = useCallback(
     (nextValue: boolean) => {
@@ -80,6 +83,7 @@ export default function BookDetailScreen() {
         isTogglingRead={toggleReadStatus.isPending}
         onEditPress={handleEditPress}
       />
+      <DeleteBookControl onConfirmedDelete={performDelete} isDeleting={isDeleting} />
     </ScrollView>
   );
 }
