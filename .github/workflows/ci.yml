@@ -41,4 +41,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx jest --watchAll=false --ci
+      - run: npx jest --watchAll=false --ci --coverage
+
+  build:
+    name: Build web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx expo export --platform web
