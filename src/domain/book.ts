@@ -6,7 +6,7 @@ export const bookSchema = z.object({
   id: z.string().uuid(),
   titre: z.string().min(1),
   auteur: z.string().min(1),
-  editeur: z.string().min(1),
+  editeur: z.string(),
   annee: z.number().int().min(1450).max(nextYear),
   lu: z.boolean(),
   favori: z.boolean(),
