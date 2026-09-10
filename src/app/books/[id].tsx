@@ -1,8 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { BookDetailCard } from "@/components/book-details/book-detail-card";
+import { BookDetailSkeleton } from "@/components/book-details/book-detail-skeleton";
 import { DeleteBookControl } from "@/components/book-details/delete-book-control";
 import { isAppError } from "@/domain/app-error";
 import { useBookDeletion } from "@/features/books/use-book-deletion";
@@ -40,12 +41,7 @@ export default function BookDetailScreen() {
 
   // État : chargement
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={lightColors.primary} />
-        <Text style={styles.centeredText}>Chargement de la fiche…</Text>
-      </View>
-    );
+    return <BookDetailSkeleton />;
   }
 
   // État : erreur, avec réessai

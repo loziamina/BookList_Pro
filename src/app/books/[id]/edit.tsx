@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
+import { BookDetailSkeleton } from "@/components/book-details/book-detail-skeleton";
 import { BookForm } from "@/components/forms/book-form";
 import { isAppError } from "@/domain/app-error";
 import { BookFormData } from "@/domain/book";
@@ -54,12 +55,7 @@ export default function EditBookScreen() {
 
   // État : chargement
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator color={lightColors.primary} />
-        <Text style={styles.centeredText}>{"Chargement de l'ouvrage…"}</Text>
-      </View>
-    );
+    return <BookDetailSkeleton />;
   }
 
   // État : erreur, avec réessai
