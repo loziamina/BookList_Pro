@@ -58,8 +58,12 @@ export function BookForm({
   }, [serverErrors, setError]);
 
   const submitForm = handleSubmit(async (data) => {
-    await onSubmit(data);
-  });
+  if (isSubmitting) {
+    return;
+  }
+
+  await onSubmit(data);
+});
 
   return (
     <View style={styles.container}>
