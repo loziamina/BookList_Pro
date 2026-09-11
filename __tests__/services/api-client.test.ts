@@ -148,6 +148,46 @@ describe("apiRequest", () => {
     });
   });
 
+  it("convertit une erreur 413 en payload trop lourd", async () => {
+    jest.spyOn(globalThis, "fetch").mockResolvedValue(
+      mockResponse(413, {
+        message: "Image trop lourde.",
+      }),
+    );
+
+    await expect(
+      apiRequest({
+        path: "/books/livre-1",
+        method: "PATCH",
+        body: { couverture: "x" },
+        schema: z.object({ id: z.string() }),
+      }),
+    ).rejects.toMatchObject({
+      type: "payload-too-large",
+      status: 413,
+    });
+  });
+
+  it("convertit une erreur 415 en format refusé", async () => {
+    jest.spyOn(globalThis, "fetch").mockResolvedValue(
+      mockResponse(415, {
+        message: "Format refusé.",
+      }),
+    );
+
+    await expect(
+      apiRequest({
+        path: "/books/livre-1",
+        method: "PATCH",
+        body: { couverture: "x" },
+        schema: z.object({ id: z.string() }),
+      }),
+    ).rejects.toMatchObject({
+      type: "unsupported-media",
+      status: 415,
+    });
+  });
+
   it("convertit un échec de fetch en erreur réseau", async () => {
     jest
       .spyOn(globalThis, "fetch")

@@ -44,6 +44,7 @@ export const bookFormSchema = z.object({
 export const bookUpdateSchema = bookFormSchema.partial().extend({
   favori: z.boolean().optional(),
   note: z.number().min(0).max(5).nullable().optional(),
+  couverture: z.string().nullable().optional(),
 });
 
 export type Book = z.infer<typeof bookSchema>;
