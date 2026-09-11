@@ -68,6 +68,8 @@ describe("useBooks", () => {
       },
       expect.any(AbortSignal),
     );
+    expect(result.current.isInitialLoading).toBe(false);
+    expect(result.current.isFetchingNextPage).toBe(false);
 
     await unmount();
     queryClient.clear();

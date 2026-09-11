@@ -62,22 +62,7 @@ export function usePatchBook() {
   });
 }
 
-export function useToggleReadStatus() {
-  const refreshBookCache = useRefreshBookCache();
-
-  return useMutation({
-    mutationFn: ({
-      id,
-      lu,
-      version,
-    }: {
-      id: string;
-      lu: boolean;
-      version?: number;
-    }) => updateBook(id, { lu }, version),
-    onSuccess: refreshBookCache,
-  });
-}
+export { useToggleReadStatus } from "@/hooks/queries/use-book-actions";
 
 export function useDeleteBook() {
   const queryClient = useQueryClient();
