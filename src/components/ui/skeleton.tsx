@@ -1,4 +1,8 @@
+import { useMemo } from "react";
 import { View, StyleSheet } from "react-native";
+
+import { useTheme } from "@/providers/theme-provider";
+import type { ThemeColors } from "@/theme/tokens";
 
 type SkeletonProps = {
   height?: number;
@@ -7,6 +11,9 @@ type SkeletonProps = {
 };
 
 export function Skeleton({ height = 16, width = "100%", style }: SkeletonProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessibilityElementsHidden
@@ -16,9 +23,11 @@ export function Skeleton({ height = 16, width = "100%", style }: SkeletonProps) 
   );
 }
 
-const styles = StyleSheet.create({
-  skeleton: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 6,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    skeleton: {
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: 6,
+    },
+  });
+}

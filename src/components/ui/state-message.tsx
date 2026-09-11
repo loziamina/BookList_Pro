@@ -1,4 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo } from "react";
+import { Pressable, Text, View, StyleSheet } from "react-native";
+
+import { useTheme } from "@/providers/theme-provider";
+import type { ThemeColors } from "@/theme/tokens";
 
 type StateMessageProps = {
   title: string;
@@ -13,12 +17,13 @@ export function StateMessage({
   actionLabel,
   onAction,
 }: StateMessageProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container} accessibilityRole="alert">
       <Text style={styles.title}>{title}</Text>
-      {description ? (
-        <Text style={styles.description}>{description}</Text>
-      ) : null}
+      {description ? <Text style={styles.description}>{description}</Text> : null}
       {actionLabel && onAction ? (
         <Pressable
           onPress={onAction}
@@ -34,25 +39,21 @@ export function StateMessage({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-    gap: 8,
-  },
-  title: { fontSize: 16, fontWeight: "600", textAlign: "center" },
-  description: { fontSize: 14, color: "#64748B", textAlign: "center" },
-  button: {
-    marginTop: 12,
-    paddingHorizontal: 16,
-    minHeight: 44,
-    minWidth: 44,
-    backgroundColor: "#2563EB",
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: { color: "#FFFFFF", fontWeight: "600" },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 8 },
+    title: { fontSize: 16, fontWeight: "600", textAlign: "center", color: colors.text },
+    description: { fontSize: 14, color: colors.textMuted, textAlign: "center" },
+    button: {
+      marginTop: 12,
+      paddingHorizontal: 16,
+      minHeight: 44,
+      minWidth: 44,
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    buttonText: { color: colors.primaryContrast, fontWeight: "600" },
+  });
+}

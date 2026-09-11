@@ -1,6 +1,9 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo } from "react";
+import { Pressable, Text, View, StyleSheet } from "react-native";
 
 import type { NormalizedBookFilters } from "@/domain/book-filters";
+import { useTheme } from "@/providers/theme-provider";
+import type { ThemeColors } from "@/theme/tokens";
 
 type SortField = NormalizedBookFilters["sort"];
 type SortOrder = NormalizedBookFilters["order"];
@@ -19,6 +22,9 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
 ];
 
 export function BookSort({ sort, order, onChange }: BookSortProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   function handlePress(field: SortField) {
     if (field === sort) {
       onChange(field, order === "asc" ? "desc" : "asc");
@@ -39,9 +45,7 @@ export function BookSort({ sort, order, onChange }: BookSortProps) {
             accessibilityRole="radio"
             accessibilityState={{ selected: active }}
             accessibilityLabel={`Trier par ${option.label}${
-              active
-                ? `, ordre ${order === "asc" ? "croissant" : "décroissant"}`
-                : ""
+              active ? `, ordre ${order === "asc" ? "croissant" : "décroissant"}` : ""
             }`}
             style={[styles.chip, active && styles.chipActive]}
             hitSlop={4}
@@ -56,24 +60,20 @@ export function BookSort({ sort, order, onChange }: BookSortProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-  chip: {
-    minHeight: 44,
-    paddingHorizontal: 12,
-    justifyContent: "center",
-    borderRadius: 8,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-  chipActive: { borderColor: "#2563EB" },
-  chipText: { fontSize: 13, fontWeight: "600", color: "#475569" },
-  chipTextActive: { color: "#2563EB" },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
+    chip: {
+      minHeight: 44,
+      paddingHorizontal: 12,
+      justifyContent: "center",
+      borderRadius: 8,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    chipActive: { borderColor: colors.primary },
+    chipText: { fontSize: 13, fontWeight: "600", color: colors.textMuted },
+    chipTextActive: { color: colors.primary },
+  });
+}
