@@ -16,6 +16,7 @@ export const radii = {
 export const lightColors = {
   background: "#F7F5F0",
   surface: "#FFFFFF",
+  surfaceMuted: "#F1F5F9",
   text: "#1D1B18",
   textMuted: "#68635D",
   primary: "#715330",
@@ -23,11 +24,14 @@ export const lightColors = {
   border: "#DED8CF",
   danger: "#B42318",
   success: "#287A4D",
+  successMuted: "#DCFCE7",
+  warningMuted: "#FEF3C7",
 } as const;
 
 export const darkColors = {
   background: "#171512",
   surface: "#24211D",
+  surfaceMuted: "#2E2A24",
   text: "#F6F1E9",
   textMuted: "#B9B0A5",
   primary: "#D7AD75",
@@ -35,6 +39,8 @@ export const darkColors = {
   border: "#464039",
   danger: "#FF8A80",
   success: "#79D2A3",
+  successMuted: "#1F3A2A",
+  warningMuted: "#3A3220",
 } as const;
 
 export type ThemeColors = {
