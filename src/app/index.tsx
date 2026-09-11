@@ -1,26 +1,27 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { BookCard } from "@/components/catalogue/book-card";
 import { BookCardSkeleton } from "@/components/catalogue/book-card-skeleton";
-import {
-  BookFilters,
-  type StatusFilter,
-} from "@/components/catalogue/book-filters";
+import { BookFilters, type StatusFilter } from "@/components/catalogue/book-filters";
 import { BookSort } from "@/components/catalogue/book-sort";
 import { SearchBar } from "@/components/catalogue/search-bar";
 import { StateMessage } from "@/components/ui/state-message";
 import type { Book } from "@/domain/book";
 import type { NormalizedBookFilters } from "@/domain/book-filters";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useToggleFavorite } from "@/hooks/queries/use-book-actions";
 import { useBooks } from "@/hooks/queries/use-books";
-import { useDebounce } from "@/hooks/use-debounce";
+import { useTheme } from "@/providers/theme-provider";
+import type { ThemeColors } from "@/theme/tokens";
 
 const PAGE_SIZE = 20;
 
 export default function CatalogueScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
@@ -41,8 +42,7 @@ export default function CatalogueScreen() {
     ...(favoriOnly ? { favori: true } : {}),
   };
 
-  const { data, isPending, isError, error, refetch, isFetching } =
-    useBooks(filters);
+  const { data, isPending, isError, error, refetch, isFetching } = useBooks(filters);
   const { mutate: toggleFavorite } = useToggleFavorite();
 
   function handleSearchChange(value: string) {
@@ -78,11 +78,7 @@ export default function CatalogueScreen() {
   }
 
   function handleToggleFavorite(book: Book) {
-    toggleFavorite({
-      id: book.id,
-      favori: !book.favori,
-      version: book.version,
-    });
+    toggleFavorite({ id: book.id, favori: !book.favori, version: book.version });
   }
 
   const toolbar = (
@@ -189,10 +185,7 @@ export default function CatalogueScreen() {
           disabled={page >= data.totalPages}
           accessibilityRole="button"
           accessibilityLabel="Page suivante"
-          style={[
-            styles.pageButton,
-            page >= data.totalPages && styles.pageButtonDisabled,
-          ]}
+          style={[styles.pageButton, page >= data.totalPages && styles.pageButtonDisabled]}
           hitSlop={8}
         >
           <Text style={styles.pageButtonText}>Suivant</Text>
@@ -202,44 +195,19 @@ export default function CatalogueScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFC" },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  count: { fontSize: 14, color: "#475569" },
-  addButton: {
-    minHeight: 44,
-    paddingHorizontal: 16,
-    justifyContent: "center",
-    backgroundColor: "#2563EB",
-    borderRadius: 8,
-  },
-  addButtonText: { color: "#FFFFFF", fontWeight: "600" },
-  list: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
-  separator: { height: 12 },
-  pagination: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
-  },
-  pageButton: {
-    minHeight: 44,
-    minWidth: 44,
-    paddingHorizontal: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#E2E8F0",
-    borderRadius: 8,
-  },
-  pageButtonDisabled: { opacity: 0.4 },
-  pageButtonText: { fontWeight: "600", color: "#1E293B" },
-  pageLabel: { fontSize: 13, color: "#64748B" },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingTop: 16 },
+    count: { fontSize: 14, color: colors.textMuted },
+    addButton: { minHeight: 44, paddingHorizontal: 16, justifyContent: "center", backgroundColor: colors.primary, borderRadius: 8 },
+    addButtonText: { color: colors.primaryContrast, fontWeight: "600" },
+    list: { paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
+    separator: { height: 12 },
+    pagination: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, borderTopWidth: 1, borderTopColor: colors.border },
+    pageButton: { minHeight: 44, minWidth: 44, paddingHorizontal: 12, justifyContent: "center", alignItems: "center", backgroundColor: colors.surfaceMuted, borderRadius: 8 },
+    pageButtonDisabled: { opacity: 0.4 },
+    pageButtonText: { fontWeight: "600", color: colors.text },
+    pageLabel: { fontSize: 13, color: colors.textMuted },
+  });
+}

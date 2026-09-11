@@ -1,8 +1,14 @@
-import { StyleSheet, View } from "react-native";
+import { useMemo } from "react";
+import { View, StyleSheet } from "react-native";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTheme } from "@/providers/theme-provider";
+import type { ThemeColors } from "@/theme/tokens";
 
 export function BookCardSkeleton() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       style={styles.card}
@@ -16,12 +22,14 @@ export function BookCardSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    card: {
+      padding: 16,
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+  });
+}

@@ -1,8 +1,10 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { FavoriteButton } from "@/components/catalogue/favorite-button";
 import type { Book } from "@/domain/book";
+import { useTheme } from "@/providers/theme-provider";
+import type { ThemeColors } from "@/theme/tokens";
 
 type BookCardProps = {
   book: Book;
@@ -11,6 +13,8 @@ type BookCardProps = {
 };
 
 function BookCardComponent({ book, onPress, onToggleFavorite }: BookCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const statutLabel = book.lu ? "Lu" : "Non lu";
 
   return (
@@ -49,24 +53,26 @@ function BookCardComponent({ book, onPress, onToggleFavorite }: BookCardProps) {
 
 export const BookCard = memo(BookCardComponent);
 
-const styles = StyleSheet.create({
-  card: {
-    minHeight: 44,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    gap: 4,
-  },
-  cardPressed: { backgroundColor: "#F1F5F9" },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 8 },
-  title: { fontSize: 16, fontWeight: "700", flex: 1 },
-  auteur: { fontSize: 14, color: "#475569" },
-  footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 4 },
-  meta: { fontSize: 12, color: "#94A3B8" },
-  badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
-  badgeLu: { backgroundColor: "#DCFCE7" },
-  badgeNonLu: { backgroundColor: "#FEF3C7" },
-  badgeText: { fontSize: 12, fontWeight: "600" },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    card: {
+      minHeight: 44,
+      padding: 16,
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: 4,
+    },
+    cardPressed: { backgroundColor: colors.surfaceMuted },
+    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 8 },
+    title: { fontSize: 16, fontWeight: "700", flex: 1, color: colors.text },
+    auteur: { fontSize: 14, color: colors.textMuted },
+    footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 4 },
+    meta: { fontSize: 12, color: colors.textMuted },
+    badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
+    badgeLu: { backgroundColor: colors.successMuted },
+    badgeNonLu: { backgroundColor: colors.warningMuted },
+    badgeText: { fontSize: 12, fontWeight: "600", color: colors.text },
+  });
+}
