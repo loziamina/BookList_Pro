@@ -1,14 +1,16 @@
 import { memo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { FavoriteButton } from "@/components/catalogue/favorite-button";
 import type { Book } from "@/domain/book";
 
 type BookCardProps = {
   book: Book;
   onPress: (id: string) => void;
+  onToggleFavorite: (book: Book) => void;
 };
 
-function BookCardComponent({ book, onPress }: BookCardProps) {
+function BookCardComponent({ book, onPress, onToggleFavorite }: BookCardProps) {
   const statutLabel = book.lu ? "Lu" : "Non lu";
 
   return (
@@ -25,11 +27,10 @@ function BookCardComponent({ book, onPress }: BookCardProps) {
         <Text style={styles.title} numberOfLines={2}>
           {book.titre}
         </Text>
-        {book.favori ? (
-          <Text accessibilityElementsHidden style={styles.favori}>
-            ♥
-          </Text>
-        ) : null}
+        <FavoriteButton
+          favori={book.favori}
+          onToggle={() => onToggleFavorite(book)}
+        />
       </View>
       <Text style={styles.auteur} numberOfLines={1}>
         {book.auteur}
@@ -38,9 +39,7 @@ function BookCardComponent({ book, onPress }: BookCardProps) {
         <Text style={styles.meta}>
           {book.editeur} · {book.annee}
         </Text>
-        <View
-          style={[styles.badge, book.lu ? styles.badgeLu : styles.badgeNonLu]}
-        >
+        <View style={[styles.badge, book.lu ? styles.badgeLu : styles.badgeNonLu]}>
           <Text style={styles.badgeText}>{statutLabel}</Text>
         </View>
       </View>
@@ -61,21 +60,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   cardPressed: { backgroundColor: "#F1F5F9" },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 8,
-  },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 8 },
   title: { fontSize: 16, fontWeight: "700", flex: 1 },
-  favori: { fontSize: 16, color: "#E11D48" },
   auteur: { fontSize: 14, color: "#475569" },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 4,
-  },
+  footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 4 },
   meta: { fontSize: 12, color: "#94A3B8" },
   badge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
   badgeLu: { backgroundColor: "#DCFCE7" },
