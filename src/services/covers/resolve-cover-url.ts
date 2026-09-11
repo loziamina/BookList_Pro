@@ -1,8 +1,14 @@
 /**
  * Résolution d’URL de couverture (image affichée pour un livre).
- * Une seule fonction pour les trois cas : relatif, absolu, repli.
+ * Cas : relatif, absolu, référence locale (localStorage), repli.
  */
 import { API_BASE_URL } from "@/services/api/config";
+
+import {
+  bookIdFromLocalCoverRef,
+  isLocalCoverRef,
+  readLocalCover,
+} from "./local-cover-storage";
 
 /** Couverture de repli (SVG neutre) quand `couverture` est absente. */
 export const FALLBACK_COVER_URL =
@@ -26,7 +32,8 @@ function isAbsoluteUrl(value: string): boolean {
 
 /**
  * Transforme la valeur `couverture` du livre en URI affichable.
- * - chemin relatif (`/covers/…`) → préfixé avec l’URL de l’API
+ * - `local:<id>` → image lue dans localStorage (web)
+ * - chemin relatif → préfixé avec l’URL de l’API
  * - URL absolue / data URI → inchangée
  * - null / vide → couverture de repli
  */
@@ -37,6 +44,12 @@ export function resolveCoverUrl(
 
   if (!value) {
     return FALLBACK_COVER_URL;
+  }
+
+  if (isLocalCoverRef(value)) {
+    const bookId = bookIdFromLocalCoverRef(value);
+    const stored = bookId ? readLocalCover(bookId) : null;
+    return stored ?? FALLBACK_COVER_URL;
   }
 
   if (isAbsoluteUrl(value)) {

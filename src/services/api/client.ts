@@ -65,10 +65,16 @@ function createHttpError(status: number, payload: unknown): AppError {
   }
 
   if (status === 422) {
+    const fields = details?.champs ?? {};
+    const firstFieldMessage = Object.values(fields)[0];
     return {
       type: "validation",
-      message,
-      fields: details?.champs ?? {},
+      message:
+        details?.message ??
+        (typeof firstFieldMessage === "string"
+          ? firstFieldMessage
+          : "Une erreur de validation est survenue."),
+      fields,
       status,
     };
   }
