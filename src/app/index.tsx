@@ -4,51 +4,126 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { BookCard } from "@/components/catalogue/book-card";
 import { BookCardSkeleton } from "@/components/catalogue/book-card-skeleton";
+import {
+  BookFilters,
+  type StatusFilter,
+} from "@/components/catalogue/book-filters";
+import { BookSort } from "@/components/catalogue/book-sort";
+import { SearchBar } from "@/components/catalogue/search-bar";
 import { StateMessage } from "@/components/ui/state-message";
 import type { Book } from "@/domain/book";
+import type { NormalizedBookFilters } from "@/domain/book-filters";
+import { useToggleFavorite } from "@/hooks/queries/use-book-actions";
 import { useBooks } from "@/hooks/queries/use-books";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const PAGE_SIZE = 20;
 
 export default function CatalogueScreen() {
   const router = useRouter();
-  const [page, setPage] = useState(1);
 
-  const { data, isPending, isError, error, refetch, isFetching } = useBooks({
+  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [status, setStatus] = useState<StatusFilter>("tous");
+  const [favoriOnly, setFavoriOnly] = useState(false);
+  const [sort, setSort] = useState<NormalizedBookFilters["sort"]>("titre");
+  const [order, setOrder] = useState<NormalizedBookFilters["order"]>("asc");
+
+  const debouncedSearch = useDebounce(searchInput, 300);
+
+  const filters: NormalizedBookFilters = {
     page,
     limit: PAGE_SIZE,
-    sort: "titre",
-    order: "asc",
-  });
+    sort,
+    order,
+    ...(debouncedSearch ? { q: debouncedSearch } : {}),
+    ...(status !== "tous" ? { status } : {}),
+    ...(favoriOnly ? { favori: true } : {}),
+  };
+
+  const { data, isPending, isError, error, refetch, isFetching } =
+    useBooks(filters);
+  const { mutate: toggleFavorite } = useToggleFavorite();
+
+  function handleSearchChange(value: string) {
+    setSearchInput(value);
+    setPage(1);
+  }
+
+  function handleStatusChange(value: StatusFilter) {
+    setStatus(value);
+    setPage(1);
+  }
+
+  function handleFavoriToggle() {
+    setFavoriOnly((prev) => !prev);
+    setPage(1);
+  }
+
+  function handleSortChange(
+    newSort: NormalizedBookFilters["sort"],
+    newOrder: NormalizedBookFilters["order"],
+  ) {
+    setSort(newSort);
+    setOrder(newOrder);
+    setPage(1);
+  }
 
   function handleOpenBook(id: string) {
-    router.push(`/books/${id}` as never);
+    router.push(`/books/${id}`);
   }
 
   function handleAddBook() {
-    router.push("/books/new" as never);
+    router.push("/books/new");
   }
+
+  function handleToggleFavorite(book: Book) {
+    toggleFavorite({
+      id: book.id,
+      favori: !book.favori,
+      version: book.version,
+    });
+  }
+
+  const toolbar = (
+    <>
+      <SearchBar onSearchChange={handleSearchChange} />
+      <BookFilters
+        status={status}
+        favoriOnly={favoriOnly}
+        onStatusChange={handleStatusChange}
+        onFavoriToggle={handleFavoriToggle}
+      />
+      <BookSort sort={sort} order={order} onChange={handleSortChange} />
+    </>
+  );
 
   if (isPending) {
     return (
-      <FlatList
-        data={Array.from({ length: 6 })}
-        keyExtractor={(_, index) => `skeleton-${index}`}
-        renderItem={() => <BookCardSkeleton />}
-        contentContainerStyle={styles.list}
-        accessibilityLabel="Chargement du catalogue"
-      />
+      <View style={styles.container}>
+        {toolbar}
+        <FlatList
+          data={Array.from({ length: 6 })}
+          keyExtractor={(_, index) => `skeleton-${index}`}
+          renderItem={() => <BookCardSkeleton />}
+          contentContainerStyle={styles.list}
+          accessibilityLabel="Chargement du catalogue"
+        />
+      </View>
     );
   }
 
   if (isError) {
     return (
-      <StateMessage
-        title="Impossible de charger le catalogue"
-        description={error.message}
-        actionLabel="Réessayer"
-        onAction={() => refetch()}
-      />
+      <View style={styles.container}>
+        {toolbar}
+        <StateMessage
+          title="Impossible de charger le catalogue"
+          description={error.message}
+          actionLabel="Réessayer"
+          onAction={() => refetch()}
+        />
+      </View>
     );
   }
 
@@ -56,7 +131,7 @@ export default function CatalogueScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.toolbar}>
+      <View style={styles.headerRow}>
         <Text style={styles.count}>
           {data.total} ouvrage{data.total > 1 ? "s" : ""}
         </Text>
@@ -71,17 +146,23 @@ export default function CatalogueScreen() {
         </Pressable>
       </View>
 
+      {toolbar}
+
       {books.length === 0 ? (
         <StateMessage
           title="Aucun ouvrage"
-          description="Le fonds ne contient aucun ouvrage pour ces critères."
+          description="Aucun résultat pour ces critères."
         />
       ) : (
         <FlatList
           data={books}
           keyExtractor={(book: Book) => book.id}
           renderItem={({ item }) => (
-            <BookCard book={item} onPress={handleOpenBook} />
+            <BookCard
+              book={item}
+              onPress={handleOpenBook}
+              onToggleFavorite={handleToggleFavorite}
+            />
           )}
           contentContainerStyle={styles.list}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -123,11 +204,12 @@ export default function CatalogueScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F8FAFC" },
-  toolbar: {
+  headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   count: { fontSize: 14, color: "#475569" },
   addButton: {
