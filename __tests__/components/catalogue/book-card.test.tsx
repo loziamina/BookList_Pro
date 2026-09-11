@@ -3,7 +3,7 @@ import { fireEvent, screen } from "@testing-library/react-native";
 import { BookCard } from "@/components/catalogue/book-card";
 import type { Book } from "@/domain/book";
 
-import { renderWithProviders } from "../../utils/render-with-providers";
+import { renderWithProviders } from "../../../test-utils/render-with-providers";
 
 const book: Book = {
   id: "123e4567-e89b-12d3-a456-426614174000",
