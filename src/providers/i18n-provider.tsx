@@ -10,7 +10,17 @@ type I18nContextValue = {
   formatNumber: (value: number) => string;
 };
 
-const I18nContext = createContext<I18nContextValue | undefined>(undefined);
+const I18nContext = createContext<I18nContextValue>({
+  locale: "fr",
+  t: translations.fr,
+  setLocale: () => {},
+  formatDate: (isoDate) =>
+    new Intl.DateTimeFormat("fr-FR", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(new Date(isoDate)),
+  formatNumber: (value) => new Intl.NumberFormat("fr-FR").format(value),
+});
 
 const STORAGE_KEY = "booklist:locale";
 const SUPPORTED_LOCALES: Locale[] = ["fr", "en"];
@@ -55,7 +65,10 @@ export function I18nProvider({ children }: PropsWithChildren) {
       t: translations[locale],
       setLocale: setLocaleState,
       formatDate: (isoDate: string) =>
-        new Intl.DateTimeFormat(localeTag, { dateStyle: "medium" }).format(new Date(isoDate)),
+        new Intl.DateTimeFormat(localeTag, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(isoDate)),
       formatNumber: (value: number) => new Intl.NumberFormat(localeTag).format(value),
     };
   }, [locale]);
@@ -64,11 +77,5 @@ export function I18nProvider({ children }: PropsWithChildren) {
 }
 
 export function useI18n(): I18nContextValue {
-  const context = useContext(I18nContext);
-
-  if (!context) {
-    throw new Error("useI18n doit être utilisé à l'intérieur de I18nProvider.");
-  }
-
-  return context;
+  return useContext(I18nContext);
 }

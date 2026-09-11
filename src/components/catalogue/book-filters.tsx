@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Pressable, Text, View, StyleSheet } from "react-native";
 
+import { useI18n } from "@/providers/i18n-provider";
 import { useTheme } from "@/providers/theme-provider";
 import type { ThemeColors } from "@/theme/tokens";
 
@@ -13,12 +14,6 @@ type BookFiltersProps = {
   onFavoriToggle: () => void;
 };
 
-const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
-  { value: "tous", label: "Tous" },
-  { value: "lu", label: "Lu" },
-  { value: "nonlu", label: "Non lu" },
-];
-
 export function BookFilters({
   status,
   favoriOnly,
@@ -26,11 +21,17 @@ export function BookFilters({
   onFavoriToggle,
 }: BookFiltersProps) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const statusOptions: { value: StatusFilter; label: string }[] = [
+    { value: "tous", label: t.catalogue.filterAll },
+    { value: "lu", label: t.catalogue.filterRead },
+    { value: "nonlu", label: t.catalogue.filterUnread },
+  ];
 
   return (
     <View style={styles.container} accessibilityRole="radiogroup">
-      {STATUS_OPTIONS.map((option) => {
+      {statusOptions.map((option) => {
         const selected = status === option.value;
         return (
           <Pressable
@@ -38,7 +39,7 @@ export function BookFilters({
             onPress={() => onStatusChange(option.value)}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            accessibilityLabel={`Filtrer : ${option.label}`}
+            accessibilityLabel={t.catalogue.filterAccessibilityLabel(option.label)}
             style={[styles.chip, selected && styles.chipSelected]}
             hitSlop={4}
           >
@@ -53,12 +54,12 @@ export function BookFilters({
         onPress={onFavoriToggle}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: favoriOnly }}
-        accessibilityLabel="Coups de cœur uniquement"
+        accessibilityLabel={t.catalogue.filterFavoriAccessibilityLabel}
         style={[styles.chip, favoriOnly && styles.chipSelected]}
         hitSlop={4}
       >
         <Text style={[styles.chipText, favoriOnly && styles.chipTextSelected]}>
-          ♥ Favoris
+          {t.catalogue.filterFavoriOnly}
         </Text>
       </Pressable>
     </View>

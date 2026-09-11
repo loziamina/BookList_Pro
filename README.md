@@ -107,11 +107,10 @@ Le socle technique commun est disponible :
 Les fonctionnalités des lots 1 à 3 sont développées progressivement sur des
 branches dédiées et intégrées par Pull Request.
 
-## Documentation attendue
+## Documentation disponible
 
 - `docs/ARCHITECTURE.md` : architecture et parcours des données
 - `docs/ADR/001-gestion-etat-serveur.md`
-- `docs/ADR/002-strategie-hors-ligne.md`
 - `docs/ADR/003-resolution-conflits.md`
 - `docs/PERFORMANCE.md`
 - `IA.md`

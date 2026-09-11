@@ -1,13 +1,20 @@
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { spacing, type ThemeColors } from "@/theme/tokens";
 
 export function BookDetailSkeleton() {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View
       accessible
-      accessibilityLabel="Chargement de la fiche de l'ouvrage"
+      accessibilityLabel={t.book.loading}
       accessibilityRole="progressbar"
       style={styles.container}
     >
@@ -31,11 +38,13 @@ export function BookDetailSkeleton() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     gap: spacing.lg,
     padding: spacing.lg,
+    backgroundColor: colors.background,
   },
   header: {
     gap: spacing.sm,
@@ -47,4 +56,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-});
+  });
+}

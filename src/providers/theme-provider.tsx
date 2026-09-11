@@ -20,7 +20,12 @@ type ThemeContextValue = {
   setMode: (mode: ThemeMode) => void;
 };
 
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextValue>({
+  mode: "light",
+  scheme: "light",
+  colors: lightColors,
+  setMode: () => {},
+});
 
 const STORAGE_KEY = "booklist:theme-mode";
 
@@ -75,13 +80,5 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 }
 
 export function useTheme(): ThemeContextValue {
-  const context = useContext(ThemeContext);
-
-  if (!context) {
-    throw new Error(
-      "useTheme doit être utilisé à l'intérieur de ThemeProvider.",
-    );
-  }
-
-  return context;
+  return useContext(ThemeContext);
 }

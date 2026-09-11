@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { lightColors, radii, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { radii, spacing, type ThemeColors } from "@/theme/tokens";
 
 const MAX_DIMENSION_PX = 800;
 const JPEG_QUALITY = 0.85;
@@ -65,6 +67,9 @@ export function CoverUpload({
   isRemoving,
   uploadError,
 }: CoverUploadProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -74,7 +79,7 @@ export function CoverUpload({
     return (
       <View style={styles.container}>
         <Text style={styles.unsupportedText}>
-          {"L'envoi d'une couverture n'est disponible que sur navigateur."}
+          {t.cover.webOnly}
         </Text>
       </View>
     );
@@ -100,7 +105,7 @@ export function CoverUpload({
       const resizedDataUrl = await resizeImageFile(file);
       await onUpload(resizedDataUrl);
     } catch {
-      setLocalError("Impossible de traiter cette image. Réessayez.");
+      setLocalError(t.cover.processingError);
     }
   }
 
@@ -122,7 +127,7 @@ export function CoverUpload({
           accessibilityRole="button"
         >
           <Text style={styles.actionButtonText}>
-            {isUploading ? "Envoi en cours…" : "Changer la couverture"}
+            {isUploading ? t.cover.uploading : t.cover.change}
           </Text>
         </Pressable>
 
@@ -134,7 +139,7 @@ export function CoverUpload({
             accessibilityRole="button"
           >
             <Text style={styles.removeButtonText}>
-              {isRemoving ? "Retrait…" : "Retirer la couverture"}
+              {isRemoving ? t.cover.removing : t.cover.remove}
             </Text>
           </Pressable>
         ) : null}
@@ -145,7 +150,8 @@ export function CoverUpload({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     gap: spacing.xs,
   },
@@ -155,35 +161,36 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     borderWidth: 1,
-    borderColor: lightColors.border,
+    borderColor: colors.border,
     borderRadius: radii.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },
   actionButtonText: {
     fontSize: 13,
-    color: lightColors.text,
+    color: colors.text,
     fontWeight: "600",
   },
   removeButton: {
     borderWidth: 1,
-    borderColor: lightColors.danger,
+    borderColor: colors.danger,
     borderRadius: radii.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },
   removeButtonText: {
     fontSize: 13,
-    color: lightColors.danger,
+    color: colors.danger,
     fontWeight: "600",
   },
   errorText: {
-    color: lightColors.danger,
+    color: colors.danger,
     fontSize: 12,
   },
   unsupportedText: {
-    color: lightColors.textMuted,
+    color: colors.textMuted,
     fontSize: 13,
     fontStyle: "italic",
   },
-});
+  });
+}

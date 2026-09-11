@@ -1,10 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { NoteFormData, noteFormSchema } from "@/domain/note";
-import { lightColors, radii, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { radii, spacing, type ThemeColors } from "@/theme/tokens";
 
 const MAX_LENGTH = 1000;
 
@@ -13,6 +15,9 @@ type NoteFormProps = {
 };
 
 export function NoteForm({ onSubmit }: NoteFormProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [characterCount, setCharacterCount] = useState(0);
 
   const {
@@ -55,7 +60,8 @@ export function NoteForm({ onSubmit }: NoteFormProps) {
               setCharacterCount(truncated.length);
             }}
             onBlur={field.onBlur}
-            placeholder="Écrire une note de lecture…"
+            placeholder={t.notes.placeholder}
+            placeholderTextColor={colors.textMuted}
             multiline
             maxLength={MAX_LENGTH}
             editable={!isSubmitting}
@@ -79,27 +85,28 @@ export function NoteForm({ onSubmit }: NoteFormProps) {
         accessibilityRole="button"
       >
         <Text style={styles.submitButtonText}>
-          {isSubmitting ? "Envoi en cours…" : "Ajouter la note"}
+          {isSubmitting ? t.common.submitting : t.notes.add}
         </Text>
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     gap: spacing.sm,
   },
   input: {
     minHeight: 80,
     borderWidth: 1,
-    borderColor: lightColors.border,
+    borderColor: colors.border,
     borderRadius: radii.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
     fontSize: 14,
-    color: lightColors.text,
-    backgroundColor: lightColors.surface,
+    color: colors.text,
+    backgroundColor: colors.surface,
     textAlignVertical: "top",
   },
   footer: {
@@ -108,14 +115,14 @@ const styles = StyleSheet.create({
   },
   counter: {
     fontSize: 12,
-    color: lightColors.textMuted,
+    color: colors.textMuted,
   },
   errorText: {
-    color: lightColors.danger,
+    color: colors.danger,
     fontSize: 12,
   },
   submitButton: {
-    backgroundColor: lightColors.primary,
+    backgroundColor: colors.primary,
     borderRadius: radii.md,
     paddingVertical: spacing.sm,
     alignItems: "center",
@@ -124,8 +131,9 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: lightColors.primaryContrast,
+    color: colors.primaryContrast,
     fontWeight: "600",
     fontSize: 14,
   },
-});
+  });
+}

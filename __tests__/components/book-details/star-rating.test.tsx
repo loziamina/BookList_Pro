@@ -28,6 +28,17 @@ describe("StarRating", () => {
     expect(onRate).toHaveBeenCalledWith(4);
   });
 
+  it("permet de remettre une note existante à zéro", async () => {
+    const onRate = jest.fn<(value: number) => void>();
+
+    await render(<StarRating rating={3} onRate={onRate} />);
+    await fireEvent.press(
+      screen.getByRole("button", { name: /effacer la note/i }),
+    );
+
+    expect(onRate).toHaveBeenCalledWith(0);
+  });
+
   it("désactive les étoiles pendant l'enregistrement", async () => {
     const onRate = jest.fn();
 

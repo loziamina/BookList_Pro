@@ -13,6 +13,7 @@ import type { NormalizedBookFilters } from "@/domain/book-filters";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToggleFavorite } from "@/hooks/queries/use-book-actions";
 import { useBooks } from "@/hooks/queries/use-books";
+import { useI18n } from "@/providers/i18n-provider";
 import { useTheme } from "@/providers/theme-provider";
 import type { ThemeColors } from "@/theme/tokens";
 
@@ -21,6 +22,7 @@ const PAGE_SIZE = 20;
 export default function CatalogueScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [page, setPage] = useState(1);
@@ -103,7 +105,7 @@ export default function CatalogueScreen() {
           keyExtractor={(_, index) => `skeleton-${index}`}
           renderItem={() => <BookCardSkeleton />}
           contentContainerStyle={styles.list}
-          accessibilityLabel="Chargement du catalogue"
+          accessibilityLabel={t.catalogue.loading}
         />
       </View>
     );
@@ -114,9 +116,9 @@ export default function CatalogueScreen() {
       <View style={styles.container}>
         {toolbar}
         <StateMessage
-          title="Impossible de charger le catalogue"
+          title={t.catalogue.errorTitle}
           description={error.message}
-          actionLabel="Réessayer"
+          actionLabel={t.catalogue.retry}
           onAction={() => refetch()}
         />
       </View>
@@ -129,16 +131,16 @@ export default function CatalogueScreen() {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.count}>
-          {data.total} ouvrage{data.total > 1 ? "s" : ""}
+          {t.catalogue.title(data.total)}
         </Text>
         <Pressable
           onPress={handleAddBook}
           accessibilityRole="button"
-          accessibilityLabel="Ajouter un ouvrage"
+          accessibilityLabel={t.catalogue.add}
           style={styles.addButton}
           hitSlop={8}
         >
-          <Text style={styles.addButtonText}>+ Ajouter</Text>
+          <Text style={styles.addButtonText}>{t.catalogue.add}</Text>
         </Pressable>
       </View>
 
@@ -146,8 +148,8 @@ export default function CatalogueScreen() {
 
       {books.length === 0 ? (
         <StateMessage
-          title="Aucun ouvrage"
-          description="Aucun résultat pour ces critères."
+          title={t.catalogue.emptyTitle}
+          description={t.catalogue.emptyDescription}
         />
       ) : (
         <FlatList
@@ -170,25 +172,25 @@ export default function CatalogueScreen() {
           onPress={() => setPage((p) => Math.max(1, p - 1))}
           disabled={page <= 1}
           accessibilityRole="button"
-          accessibilityLabel="Page précédente"
+          accessibilityLabel={t.catalogue.previousAccessibilityLabel}
           style={[styles.pageButton, page <= 1 && styles.pageButtonDisabled]}
           hitSlop={8}
         >
-          <Text style={styles.pageButtonText}>Précédent</Text>
+          <Text style={styles.pageButtonText}>{t.catalogue.previous}</Text>
         </Pressable>
         <Text style={styles.pageLabel}>
-          Page {data.page} / {data.totalPages}
-          {isFetching ? " · actualisation…" : ""}
+          {t.catalogue.pageLabel(data.page, data.totalPages)}
+          {isFetching ? t.catalogue.updating : ""}
         </Text>
         <Pressable
           onPress={() => setPage((p) => Math.min(data.totalPages, p + 1))}
           disabled={page >= data.totalPages}
           accessibilityRole="button"
-          accessibilityLabel="Page suivante"
+          accessibilityLabel={t.catalogue.nextAccessibilityLabel}
           style={[styles.pageButton, page >= data.totalPages && styles.pageButtonDisabled]}
           hitSlop={8}
         >
-          <Text style={styles.pageButtonText}>Suivant</Text>
+          <Text style={styles.pageButtonText}>{t.catalogue.next}</Text>
         </Pressable>
       </View>
     </View>

@@ -99,6 +99,43 @@ describe("optimistic book actions", () => {
     queryClient.clear();
   });
 
+  it("restaure le favori en cas d'échec serveur", async () => {
+    mockedUpdateBook.mockRejectedValue({
+      type: "network",
+      message: "Service indisponible",
+      retryable: true,
+      status: 503,
+    });
+
+    const { Wrapper, queryClient } = createWrapper();
+    const listKey = booksKeys.list({ page: 1, limit: 20 });
+
+    queryClient.setQueryData(booksKeys.detail(book.id), book);
+    queryClient.setQueryData(listKey, page);
+
+    const { result, unmount } = await renderHook(() => useToggleFavorite(), {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      result.current.mutate({
+        id: book.id,
+        favori: true,
+        version: book.version,
+      });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(queryClient.getQueryData(booksKeys.detail(book.id))).toEqual(book);
+    expect(
+      queryClient.getQueryData<PaginatedResponse<Book>>(listKey)?.items[0].favori,
+    ).toBe(false);
+
+    await unmount();
+    queryClient.clear();
+  });
+
   it("restaure le statut lu en cas d'échec serveur", async () => {
     mockedUpdateBook.mockRejectedValue({
       type: "network",

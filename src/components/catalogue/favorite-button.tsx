@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { GestureResponderEvent, Pressable, Text, StyleSheet } from "react-native";
 
+import { useI18n } from "@/providers/i18n-provider";
 import { useTheme } from "@/providers/theme-provider";
 import type { ThemeColors } from "@/theme/tokens";
 
@@ -11,6 +12,7 @@ type FavoriteButtonProps = {
 
 export function FavoriteButton({ favori, onToggle }: FavoriteButtonProps) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   function handlePress(event: GestureResponderEvent) {
@@ -23,7 +25,7 @@ export function FavoriteButton({ favori, onToggle }: FavoriteButtonProps) {
       onPress={handlePress}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: favori }}
-      accessibilityLabel={favori ? "Retirer des coups de cœur" : "Ajouter aux coups de cœur"}
+      accessibilityLabel={favori ? t.book.removeFavorite : t.book.addFavorite}
       style={styles.button}
       hitSlop={8}
     >

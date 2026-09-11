@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
     Pressable,
@@ -11,7 +11,9 @@ import {
 } from "react-native";
 
 import { BookFormData, bookFormSchema } from "@/domain/book";
-import { lightColors, radii, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { radii, spacing, type ThemeColors } from "@/theme/tokens";
 
 type BookFormProps = {
   defaultValues?: Partial<BookFormData>;
@@ -35,6 +37,9 @@ export function BookForm({
   submitLabel,
   serverErrors,
 }: BookFormProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const form = useForm<BookFormData>({
     resolver: zodResolver(bookFormSchema),
     defaultValues: { ...emptyDefaults, ...defaultValues },
@@ -67,7 +72,7 @@ export function BookForm({
 
   return (
     <View style={styles.container}>
-      <Field label="Titre" error={errors.titre?.message}>
+      <Field label={t.book.fields.title} error={errors.titre?.message} styles={styles}>
         <Controller
           control={control}
           name="titre"
@@ -77,14 +82,15 @@ export function BookForm({
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
-              placeholder="Titre de l'ouvrage"
+              placeholder={t.book.fields.titlePlaceholder}
+              placeholderTextColor={colors.textMuted}
               editable={!isSubmitting}
             />
           )}
         />
       </Field>
 
-      <Field label="Auteur" error={errors.auteur?.message}>
+      <Field label={t.book.fields.author} error={errors.auteur?.message} styles={styles}>
         <Controller
           control={control}
           name="auteur"
@@ -94,14 +100,15 @@ export function BookForm({
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
-              placeholder="Auteur"
+              placeholder={t.book.fields.authorPlaceholder}
+              placeholderTextColor={colors.textMuted}
               editable={!isSubmitting}
             />
           )}
         />
       </Field>
 
-      <Field label="Éditeur" error={errors.editeur?.message}>
+      <Field label={t.book.fields.publisher} error={errors.editeur?.message} styles={styles}>
         <Controller
           control={control}
           name="editeur"
@@ -111,14 +118,15 @@ export function BookForm({
               value={field.value}
               onChangeText={field.onChange}
               onBlur={field.onBlur}
-              placeholder="Éditeur"
+              placeholder={t.book.fields.publisherPlaceholder}
+              placeholderTextColor={colors.textMuted}
               editable={!isSubmitting}
             />
           )}
         />
       </Field>
 
-      <Field label="Année" error={errors.annee?.message}>
+      <Field label={t.book.fields.year} error={errors.annee?.message} styles={styles}>
         <Controller
           control={control}
           name="annee"
@@ -131,7 +139,8 @@ export function BookForm({
                 field.onChange(digitsOnly === "" ? undefined : Number(digitsOnly));
               }}
               onBlur={field.onBlur}
-              placeholder="Année de publication"
+              placeholder={t.book.fields.yearPlaceholder}
+              placeholderTextColor={colors.textMuted}
               keyboardType="number-pad"
               editable={!isSubmitting}
             />
@@ -140,7 +149,7 @@ export function BookForm({
       </Field>
 
       <View style={styles.switchRow}>
-        <Text style={styles.label}>Déjà lu</Text>
+        <Text style={styles.label}>{t.book.alreadyRead}</Text>
         <Controller
           control={control}
           name="lu"
@@ -162,7 +171,7 @@ export function BookForm({
         accessibilityState={{ disabled: isSubmitting }}
       >
         <Text style={styles.submitButtonText}>
-          {isSubmitting ? "Envoi en cours…" : submitLabel}
+          {isSubmitting ? t.common.submitting : submitLabel}
         </Text>
       </Pressable>
     </View>
@@ -173,10 +182,12 @@ function Field({
   label,
   error,
   children,
+  styles,
 }: {
   label: string;
   error?: string;
   children: React.ReactNode;
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
     <View style={styles.field}>
@@ -187,7 +198,8 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     gap: spacing.md,
   },
@@ -197,20 +209,20 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: lightColors.text,
+    color: colors.text,
   },
   input: {
     borderWidth: 1,
-    borderColor: lightColors.border,
+    borderColor: colors.border,
     borderRadius: radii.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
     fontSize: 16,
-    color: lightColors.text,
-    backgroundColor: lightColors.surface,
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
   errorText: {
-    color: lightColors.danger,
+    color: colors.danger,
     fontSize: 13,
   },
   switchRow: {
@@ -221,7 +233,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     marginTop: spacing.sm,
-    backgroundColor: lightColors.primary,
+    backgroundColor: colors.primary,
     borderRadius: radii.md,
     paddingVertical: spacing.md,
     alignItems: "center",
@@ -230,8 +242,9 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
-    color: lightColors.primaryContrast,
+    color: colors.primaryContrast,
     fontWeight: "600",
     fontSize: 16,
   },
-});
+  });
+}

@@ -1,6 +1,9 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { lightColors, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { spacing, type ThemeColors } from "@/theme/tokens";
 
 type OpenLibraryInfoProps = {
   isLoading: boolean;
@@ -13,6 +16,10 @@ export function OpenLibraryInfo({
   available,
   editionCount,
 }: OpenLibraryInfoProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   // Indisponibilité (timeout, erreur réseau, réponse invalide) : dégradation
   // silencieuse, on n'affiche jamais d'erreur pour un service externe optionnel.
   if (!available) {
@@ -22,7 +29,7 @@ export function OpenLibraryInfo({
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>Recherche sur OpenLibrary…</Text>
+        <Text style={styles.text}>{t.openLibrary.loading}</Text>
       </View>
     );
   }
@@ -32,28 +39,27 @@ export function OpenLibraryInfo({
   if (editionCount === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.text}>Aucune édition référencée sur OpenLibrary.</Text>
+        <Text style={styles.text}>{t.openLibrary.none}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>
-        {editionCount} édition{editionCount > 1 ? "s" : ""} référencée
-        {editionCount > 1 ? "s" : ""} sur OpenLibrary
-      </Text>
+      <Text style={styles.text}>{t.openLibrary.editions(editionCount)}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     paddingVertical: spacing.xs,
   },
   text: {
     fontSize: 12,
-    color: lightColors.textMuted,
+    color: colors.textMuted,
     fontStyle: "italic",
   },
-});
+  });
+}

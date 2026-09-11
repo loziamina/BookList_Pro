@@ -1,8 +1,11 @@
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { NoteCard } from "@/components/notes/note-card";
 import { Note } from "@/domain/note";
-import { lightColors, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { spacing, type ThemeColors } from "@/theme/tokens";
 
 type NoteListProps = {
   notes: Note[];
@@ -11,11 +14,15 @@ type NoteListProps = {
 };
 
 export function NoteList({ notes, onDeleteNote, deletingNoteId }: NoteListProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   if (notes.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>
-          {"Aucune note de lecture pour cet ouvrage pour l'instant."}
+          {t.notes.empty}
         </Text>
       </View>
     );
@@ -39,7 +46,8 @@ export function NoteList({ notes, onDeleteNote, deletingNoteId }: NoteListProps)
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   list: {
     gap: spacing.sm,
   },
@@ -48,8 +56,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    color: lightColors.textMuted,
+    color: colors.textMuted,
     fontSize: 14,
     textAlign: "center",
   },
-});
+  });
+}

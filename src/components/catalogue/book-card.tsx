@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { FavoriteButton } from "@/components/catalogue/favorite-button";
 import type { Book } from "@/domain/book";
+import { useI18n } from "@/providers/i18n-provider";
 import { useTheme } from "@/providers/theme-provider";
 import type { ThemeColors } from "@/theme/tokens";
 
@@ -14,16 +15,22 @@ type BookCardProps = {
 
 function BookCardComponent({ book, onPress, onToggleFavorite }: BookCardProps) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const statutLabel = book.lu ? "Lu" : "Non lu";
+  const statutLabel = book.lu
+    ? t.catalogue.filterRead
+    : t.catalogue.filterUnread;
 
   return (
     <Pressable
       onPress={() => onPress(book.id)}
       accessibilityRole="button"
-      accessibilityLabel={`${book.titre}, de ${book.auteur}, ${statutLabel}${
-        book.favori ? ", coup de cœur" : ""
-      }`}
+      accessibilityLabel={t.catalogue.cardAccessibilityLabel(
+        book.titre,
+        book.auteur,
+        statutLabel,
+        book.favori,
+      )}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
       hitSlop={4}
     >

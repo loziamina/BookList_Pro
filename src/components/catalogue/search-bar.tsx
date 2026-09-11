@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { TextInput, View, StyleSheet } from "react-native";
 
+import { useI18n } from "@/providers/i18n-provider";
 import { useTheme } from "@/providers/theme-provider";
 import type { ThemeColors } from "@/theme/tokens";
 
@@ -10,6 +11,7 @@ type SearchBarProps = {
 
 export function SearchBar({ onSearchChange }: SearchBarProps) {
   const { colors } = useTheme();
+  const { t } = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [text, setText] = useState("");
 
@@ -23,9 +25,9 @@ export function SearchBar({ onSearchChange }: SearchBarProps) {
       <TextInput
         value={text}
         onChangeText={handleChange}
-        placeholder="Rechercher par titre ou auteur"
+        placeholder={t.catalogue.searchPlaceholder}
         placeholderTextColor={colors.textMuted}
-        accessibilityLabel="Rechercher par titre ou auteur"
+        accessibilityLabel={t.catalogue.searchAccessibilityLabel}
         accessibilityRole="search"
         style={styles.input}
         returnKeyType="search"
