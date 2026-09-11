@@ -26,41 +26,29 @@ exécution prioritaire dans le navigateur.
 
 - Node.js 22
 - npm
-- L'API fournie `api-books-v2`
 
 ## Installation
 
-Clonez le dépôt et installez les dépendances du client :
+L'API est incluse dans le dépôt et l'application utilise automatiquement
+`http://localhost:3000`. Aucun fichier d'environnement n'est nécessaire pour
+une exécution locale.
 
 ```bash
 git clone https://github.com/loziamina/BookList_Pro.git
 cd BookList_Pro
 npm install
+npm run setup
 ```
 
-Créez un fichier `.env.local` à partir de `.env.example` :
-
-```env
-EXPO_PUBLIC_API_URL=http://localhost:3000
-```
-
-L'API est incluse dans le dépôt. Préparez-la après le clonage :
+Puis démarrez simultanément l'API et l'application web :
 
 ```bash
-cd api-books-v2
-npm install
-npm run seed
-npm start
+npm run dev
 ```
 
-L'API doit répondre sur <http://localhost:3000/health>.
-
-Dans un second terminal, démarrez le client web :
-
-```bash
-cd BookList_Pro
-npm run web
-```
+L'API répond sur <http://localhost:3000/health> et Expo affiche l'adresse de
+l'application dans le terminal. Pour utiliser une autre API, copiez
+`.env.example` vers `.env.local` et modifiez `EXPO_PUBLIC_API_URL`.
 
 ## Vérifications
 
