@@ -1,8 +1,17 @@
 /**
  * Envoi et suppression de couverture via PATCH /books/:id.
+ * L’API limite `couverture` à 500 caractères : les images base64 sont
+ * stockées en localStorage et seules une courte référence est envoyée.
  */
 import { AppError } from "@/domain/app-error";
 import { Book } from "@/domain/book";
+
+import {
+  API_COVER_MAX_CHARS,
+  removeLocalCover,
+  saveLocalCover,
+  toLocalCoverRef,
+} from "@/services/covers/local-cover-storage";
 
 import { updateBook } from "./books-api";
 
@@ -14,7 +23,7 @@ const ALLOWED_MIME_TYPES = new Set([
   "image/svg+xml",
 ]);
 
-/** Limite alignée sur le body JSON de l’API (express 2mb) avec marge. */
+/** Garde-fou mémoire navigateur (pas la limite API de 500). */
 export const MAX_COVER_PAYLOAD_CHARS = 1_500_000;
 
 const DATA_URL_PATTERN =
@@ -32,16 +41,15 @@ function assertCoverPayload(imageData: string): void {
     } satisfies AppError;
   }
 
-  // URL ou chemin court : pas de contrôle MIME base64.
   if (
     trimmed.startsWith("http://") ||
     trimmed.startsWith("https://") ||
     trimmed.startsWith("/")
   ) {
-    if (trimmed.length > MAX_COVER_PAYLOAD_CHARS) {
+    if (trimmed.length > API_COVER_MAX_CHARS) {
       throw {
         type: "payload-too-large",
-        message: "L'image est trop lourde.",
+        message: "L'URL de couverture dépasse 500 caractères.",
         status: 413,
       } satisfies AppError;
     }
@@ -75,6 +83,20 @@ function assertCoverPayload(imageData: string): void {
   }
 }
 
+/** Valeur réellement écrite dans l’API (≤ 500 caractères). */
+function resolveApiCoverValue(bookId: string, imageData: string): string {
+  const trimmed = imageData.trim();
+
+  if (trimmed.length <= API_COVER_MAX_CHARS) {
+    removeLocalCover(bookId);
+    return trimmed;
+  }
+
+  // Photo base64 trop longue pour l’API → stockage navigateur + courte ref.
+  saveLocalCover(bookId, trimmed);
+  return toLocalCoverRef(bookId);
+}
+
 /** Enregistre la couverture (data URI, URL ou chemin) sur le livre. */
 export async function uploadBookCover(
   bookId: string,
@@ -82,13 +104,17 @@ export async function uploadBookCover(
   version?: number,
 ): Promise<Book> {
   assertCoverPayload(imageData);
-  return updateBook(bookId, { couverture: imageData.trim() }, version);
+  const couverture = resolveApiCoverValue(bookId, imageData);
+  return updateBook(bookId, { couverture }, version);
 }
 
-/** Repasse la couverture à null (retour possible à l’état d’origine côté UI). */
+/** Efface la couverture sans envoyer `null` (l’API d’origine refuse null). */
 export async function deleteBookCover(
   bookId: string,
   version?: number,
 ): Promise<Book> {
-  return updateBook(bookId, { couverture: null }, version);
+  removeLocalCover(bookId);
+  // "" est accepté par l’API (string) ; on normalise ensuite en null pour l’UI.
+  const book = await updateBook(bookId, { couverture: "" }, version);
+  return { ...book, couverture: null };
 }

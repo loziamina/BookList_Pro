@@ -1,13 +1,35 @@
 import { useCallback } from "react";
 
-import { isAppError } from "@/domain/app-error";
+import { AppError, isAppError } from "@/domain/app-error";
 import {
-    useDeleteBookCover,
-    useUploadBookCover,
+  useDeleteBookCover,
+  useUploadBookCover,
 } from "@/hooks/queries/use-book-cover";
 
-function toErrorMessage(error: unknown): string {
-  return isAppError(error) ? error.message : "Une erreur inattendue est survenue.";
+function toCoverErrorMessage(error: unknown): string {
+  if (!isAppError(error)) {
+    return "Une erreur inattendue est survenue.";
+  }
+
+  const appError = error as AppError;
+
+  if (appError.type === "payload-too-large") {
+    return "L'image est trop lourde (413). Réduisez sa taille puis réessayez.";
+  }
+
+  if (appError.type === "unsupported-media") {
+    return "Format d'image refusé (415). Utilisez JPEG, PNG ou WebP.";
+  }
+
+  if (appError.type === "validation") {
+    return (
+      appError.fields.couverture ??
+      appError.message ??
+      "La couverture n'a pas pu être enregistrée."
+    );
+  }
+
+  return appError.message;
 }
 
 export function useBookCoverPanel(bookId: string, version?: number) {
@@ -32,9 +54,13 @@ export function useBookCoverPanel(bookId: string, version?: number) {
   return {
     uploadImage,
     isUploading: uploadCover.isPending,
-    uploadError: uploadCover.isError ? toErrorMessage(uploadCover.error) : null,
+    uploadError: uploadCover.isError
+      ? toCoverErrorMessage(uploadCover.error)
+      : null,
     removeCover,
     isRemoving: deleteCover.isPending,
-    removeError: deleteCover.isError ? toErrorMessage(deleteCover.error) : null,
+    removeError: deleteCover.isError
+      ? toCoverErrorMessage(deleteCover.error)
+      : null,
   };
 }

@@ -79,6 +79,7 @@ describe("apiRequest", () => {
     ).rejects.toMatchObject({
       type: "validation",
       status: 422,
+      message: "champ obligatoire",
       fields: {
         titre: "champ obligatoire",
         annee: "année invalide",
