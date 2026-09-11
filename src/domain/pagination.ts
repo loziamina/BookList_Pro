@@ -1,5 +1,10 @@
+/**
+ * Pagination serveur.
+ * On ne charge jamais tous les livres d’un coup : page + limit + totalPages.
+ */
 import { z } from "zod";
 
+/** Schéma Zod générique : même enveloppe pour Book (ou tout autre item). */
 export function paginatedResponseSchema<ItemSchema extends z.ZodType>(
   itemSchema: ItemSchema,
 ) {

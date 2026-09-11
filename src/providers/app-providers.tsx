@@ -1,3 +1,7 @@
+/**
+ * Providers globaux.
+ * Configure TanStack Query : retry réseau uniquement, staleTime 30s, pas de retry mutations.
+ */
 import {
   QueryClient,
   QueryClientProvider,
@@ -6,6 +10,7 @@ import { PropsWithChildren } from "react";
 
 import { isAppError } from "@/domain/app-error";
 
+/** Retry seulement si AppError réseau marquée retryable (timeout, 503…). */
 function shouldRetry(failureCount: number, error: unknown): boolean {
   return (
     failureCount < 2 &&

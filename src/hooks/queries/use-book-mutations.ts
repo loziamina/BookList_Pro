@@ -1,3 +1,7 @@
+/**
+ * Mutations CRUD ouvrages.
+ * Après succès : met à jour le détail en cache + invalide toutes les listes.
+ */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Book, BookFormData, BookUpdate } from "@/domain/book";
@@ -42,6 +46,7 @@ export function useCreateBook() {
   });
 }
 
+/** Remplacement complet (formulaire d’édition → PUT). */
 export function useUpdateBook() {
   const refreshBookCache = useRefreshBookCache();
 
@@ -52,6 +57,7 @@ export function useUpdateBook() {
   });
 }
 
+/** Patch partiel (champs isolés → PATCH). */
 export function usePatchBook() {
   const refreshBookCache = useRefreshBookCache();
 
@@ -62,6 +68,7 @@ export function usePatchBook() {
   });
 }
 
+/** Réexport : toggle lu (implémentation optimiste dans use-book-actions). */
 export { useToggleReadStatus } from "@/hooks/queries/use-book-actions";
 
 export function useDeleteBook() {

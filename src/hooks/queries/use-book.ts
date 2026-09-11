@@ -1,3 +1,7 @@
+/**
+ * Hook fiche ouvrage.
+ * `enabled` évite un GET inutile si l’id de route n’est pas encore prêt.
+ */
 import { useQuery } from "@tanstack/react-query";
 
 import { booksKeys } from "@/lib/query-keys";

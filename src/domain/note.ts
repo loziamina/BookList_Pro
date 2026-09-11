@@ -1,3 +1,7 @@
+/**
+ * Domaine Note.
+ * Notes de lecture rattachées à un livre (`livreId`).
+ */
 import { z } from "zod";
 
 export const noteSchema = z.object({
@@ -7,6 +11,7 @@ export const noteSchema = z.object({
   createdAt: z.iso.datetime(),
 });
 
+/** Payload d’ajout : seul le contenu est saisi côté formulaire. */
 export const noteFormSchema = z.object({
   contenu: z
     .string()

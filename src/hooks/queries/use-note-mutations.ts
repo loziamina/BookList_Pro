@@ -1,3 +1,7 @@
+/**
+ * Mutations notes.
+ * Mise à jour du cache notes + invalidate pour resync serveur.
+ */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Note, NoteFormData } from "@/domain/note";
