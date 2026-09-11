@@ -3,16 +3,25 @@ import { useCallback } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { BookActions } from "@/components/book-details/book-actions";
+import { BookCover } from "@/components/book-details/book-cover";
 import { BookDetailCard } from "@/components/book-details/book-detail-card";
+import { CoverUpload } from "@/components/book-details/cover-upload";
 import { DeleteBookControl } from "@/components/book-details/delete-book-control";
+import { OpenLibraryInfo } from "@/components/book-details/open-library-info";
+import { StarRating } from "@/components/book-details/star-rating";
 import { NoteForm } from "@/components/notes/note-form";
 import { NoteList } from "@/components/notes/note-list";
 import { isAppError } from "@/domain/app-error";
 import { useBookDeletion } from "@/features/books/use-book-deletion";
+import { useBookCoverPanel } from "@/features/covers/use-book-cover-panel";
 import { useNotesPanel } from "@/features/notes/use-notes-panel";
 import { useBook } from "@/hooks/queries/use-book";
 import { useToggleFavorite } from "@/hooks/queries/use-book-actions";
-import { useToggleReadStatus } from "@/hooks/queries/use-book-mutations";
+import {
+  usePatchBook,
+  useToggleReadStatus,
+} from "@/hooks/queries/use-book-mutations";
+import { useOpenLibraryEditions } from "@/hooks/queries/use-open-library";
 import { lightColors, spacing } from "@/theme/tokens";
 
 export default function BookDetailScreen() {
@@ -23,6 +32,7 @@ export default function BookDetailScreen() {
   const { data: book, isLoading, isError, error, refetch } = useBook(bookId);
   const toggleReadStatus = useToggleReadStatus();
   const toggleFavorite = useToggleFavorite();
+  const patchBook = usePatchBook();
   const { performDelete, isDeleting } = useBookDeletion(bookId);
   const {
     notes,
@@ -32,6 +42,15 @@ export default function BookDetailScreen() {
     deleteNoteError,
     deletingNoteId,
   } = useNotesPanel(bookId);
+  const {
+    uploadImage,
+    isUploading,
+    uploadError,
+    removeCover,
+    isRemoving,
+    removeError,
+  } = useBookCoverPanel(bookId, book?.version);
+  const openLibraryQuery = useOpenLibraryEditions(book?.titre ?? "");
 
   const handleToggleRead = useCallback(
     (nextValue: boolean) => {
@@ -63,6 +82,21 @@ export default function BookDetailScreen() {
   const handleEditPress = useCallback(() => {
     router.push(`/books/${bookId}/edit`);
   }, [router, bookId]);
+
+  const handleRate = useCallback(
+    (value: number) => {
+      if (!book) {
+        return;
+      }
+
+      patchBook.mutate({
+        id: book.id,
+        input: { note: value },
+        version: book.version,
+      });
+    },
+    [book, patchBook],
+  );
 
   // État : chargement
   if (isLoading) {
@@ -102,7 +136,29 @@ export default function BookDetailScreen() {
   // État : succès
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <BookCover couverture={book.couverture} size={140} />
+      <CoverUpload
+        hasCover={book.couverture !== null}
+        onUpload={uploadImage}
+        onRemove={removeCover}
+        isUploading={isUploading}
+        isRemoving={isRemoving}
+        uploadError={uploadError ?? removeError}
+      />
+
       <BookDetailCard book={book} onEditPress={handleEditPress} />
+
+      <StarRating
+        rating={book.note}
+        onRate={handleRate}
+        isSaving={patchBook.isPending}
+      />
+
+      <OpenLibraryInfo
+        isLoading={openLibraryQuery.isLoading}
+        available={openLibraryQuery.data?.available ?? false}
+        editionCount={openLibraryQuery.data?.editionCount ?? 0}
+      />
 
       <BookActions
         isRead={book.lu}
