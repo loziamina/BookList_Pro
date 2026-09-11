@@ -40,6 +40,9 @@ npm install
 npm run setup
 ```
 
+La commande `npm run setup` installe l'API, crée automatiquement son dossier
+`data/` et génère la base locale.
+
 Puis démarrez simultanément l'API et l'application web :
 
 ```bash

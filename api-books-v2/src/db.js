@@ -31,6 +31,7 @@ function charger() {
 function sauvegarder() {
   const donnees = charger();
   ecritureEnCours = Promise.resolve(ecritureEnCours).then(() => {
+    fs.mkdirSync(path.dirname(FICHIER), { recursive: true });
     const tmp = `${FICHIER}.tmp`;
     fs.writeFileSync(tmp, JSON.stringify(donnees, null, 2), 'utf8');
     fs.renameSync(tmp, FICHIER);
