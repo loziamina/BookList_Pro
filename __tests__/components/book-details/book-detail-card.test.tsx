@@ -21,13 +21,7 @@ const book: Book = {
 
 describe("BookDetailCard", () => {
   it("affiche le titre, l'auteur, l'éditeur et l'année", async () => {
-    await render(
-      <BookDetailCard
-        book={book}
-        onToggleRead={jest.fn()}
-        onEditPress={jest.fn()}
-      />,
-    );
+    await render(<BookDetailCard book={book} onEditPress={jest.fn()} />);
 
     expect(screen.getByText("La Horde du Contrevent")).toBeTruthy();
     expect(screen.getByText("Alain Damasio")).toBeTruthy();
@@ -35,41 +29,10 @@ describe("BookDetailCard", () => {
     expect(screen.getByText("2004")).toBeTruthy();
   });
 
-  it("reflète le statut de lecture actuel dans l'interrupteur", async () => {
-    await render(
-      <BookDetailCard
-        book={{ ...book, lu: true }}
-        onToggleRead={jest.fn()}
-        onEditPress={jest.fn()}
-      />,
-    );
-
-    const switchElement = screen.getByLabelText("Statut de lecture");
-    expect(switchElement.props.value).toBe(true);
-  });
-
-  it("appelle onToggleRead avec la valeur inversée quand on bascule l'interrupteur", async () => {
-    const onToggleRead = jest.fn<(nextValue: boolean) => void>();
-
-    await render(
-      <BookDetailCard
-        book={{ ...book, lu: false }}
-        onToggleRead={onToggleRead}
-        onEditPress={jest.fn()}
-      />,
-    );
-
-    await fireEvent(screen.getByLabelText("Statut de lecture"), "valueChange", true);
-
-    expect(onToggleRead).toHaveBeenCalledWith(true);
-  });
-
   it("appelle onEditPress quand on clique sur Modifier", async () => {
     const onEditPress = jest.fn();
 
-    await render(
-      <BookDetailCard book={book} onToggleRead={jest.fn()} onEditPress={onEditPress} />,
-    );
+    await render(<BookDetailCard book={book} onEditPress={onEditPress} />);
 
     await fireEvent.press(screen.getByRole("button", { name: /modifier/i }));
 
