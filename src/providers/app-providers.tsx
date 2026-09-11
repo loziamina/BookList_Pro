@@ -9,6 +9,7 @@ import {
 import { PropsWithChildren } from "react";
 
 import { isAppError } from "@/domain/app-error";
+import { I18nProvider } from "@/providers/i18n-provider";
 
 /** Retry seulement si AppError réseau marquée retryable (timeout, 503…). */
 function shouldRetry(failureCount: number, error: unknown): boolean {
@@ -36,7 +37,7 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <I18nProvider>{children}</I18nProvider>
     </QueryClientProvider>
   );
 }

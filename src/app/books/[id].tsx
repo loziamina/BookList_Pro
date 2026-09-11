@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { BookActions } from "@/components/book-details/book-actions";
@@ -22,11 +22,16 @@ import {
   useToggleReadStatus,
 } from "@/hooks/queries/use-book-mutations";
 import { useOpenLibraryEditions } from "@/hooks/queries/use-open-library";
-import { lightColors, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { spacing, type ThemeColors } from "@/theme/tokens";
 
 export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const bookId = id ?? "";
 
   const { data: book, isLoading, isError, error, refetch } = useBook(bookId);
@@ -102,8 +107,8 @@ export default function BookDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={lightColors.primary} />
-        <Text style={styles.centeredText}>Chargement de la fiche…</Text>
+        <ActivityIndicator color={colors.primary} />
+        <Text style={styles.centeredText}>{t.book.loading}</Text>
       </View>
     );
   }
@@ -112,13 +117,13 @@ export default function BookDetailScreen() {
   if (isError) {
     const message = isAppError(error)
       ? error.message
-      : "Une erreur inattendue est survenue.";
+      : t.common.unexpectedError;
 
     return (
       <View style={styles.centered}>
         <Text style={styles.errorText}>{message}</Text>
         <Text style={styles.retryLink} onPress={() => refetch()}>
-          Réessayer
+          {t.common.retry}
         </Text>
       </View>
     );
@@ -128,7 +133,7 @@ export default function BookDetailScreen() {
   if (!book) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.centeredText}>Cet ouvrage est introuvable.</Text>
+        <Text style={styles.centeredText}>{t.common.bookNotFound}</Text>
       </View>
     );
   }
@@ -172,7 +177,7 @@ export default function BookDetailScreen() {
       <DeleteBookControl onConfirmedDelete={performDelete} isDeleting={isDeleting} />
 
       <View style={styles.notesSection}>
-        <Text style={styles.sectionTitle}>Notes de lecture</Text>
+        <Text style={styles.sectionTitle}>{t.book.notesTitle}</Text>
         {addNoteError ? <Text style={styles.errorText}>{addNoteError}</Text> : null}
         {deleteNoteError ? (
           <Text style={styles.errorText}>{deleteNoteError}</Text>
@@ -188,8 +193,10 @@ export default function BookDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
+    backgroundColor: colors.background,
     padding: spacing.lg,
     gap: spacing.md,
   },
@@ -199,18 +206,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: spacing.sm,
     padding: spacing.lg,
+    backgroundColor: colors.background,
   },
   centeredText: {
-    color: lightColors.textMuted,
+    color: colors.textMuted,
     fontSize: 14,
   },
   errorText: {
-    color: lightColors.danger,
+    color: colors.danger,
     fontSize: 14,
     textAlign: "center",
   },
   retryLink: {
-    color: lightColors.primary,
+    color: colors.primary,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -221,6 +229,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: lightColors.text,
+    color: colors.text,
   },
-});
+  });
+}

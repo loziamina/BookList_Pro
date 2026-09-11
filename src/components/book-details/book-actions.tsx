@@ -1,6 +1,9 @@
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 
-import { lightColors, radii, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { radii, spacing, type ThemeColors } from "@/theme/tokens";
 
 type BookActionsProps = {
   isRead: boolean;
@@ -19,15 +22,19 @@ export function BookActions({
   onToggleFavorite,
   isTogglingFavorite,
 }: BookActionsProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       <View style={styles.readRow}>
-        <Text style={styles.label}>Déjà lu</Text>
+        <Text style={styles.label}>{t.book.alreadyRead}</Text>
         <Switch
           value={isRead}
           onValueChange={onToggleRead}
           disabled={isTogglingRead}
-          accessibilityLabel="Statut de lecture"
+          accessibilityLabel={t.book.readingStatus}
         />
       </View>
 
@@ -37,25 +44,26 @@ export function BookActions({
         disabled={isTogglingFavorite}
         accessibilityRole="button"
         accessibilityLabel={
-          isFavorite ? "Retirer des coups de cœur" : "Ajouter aux coups de cœur"
+          isFavorite ? t.book.removeFavorite : t.book.addFavorite
         }
         accessibilityState={{ selected: isFavorite }}
       >
         <Text style={styles.favoriteIcon}>{isFavorite ? "♥" : "♡"}</Text>
         <Text style={styles.favoriteLabel}>
-          {isFavorite ? "Coup de cœur" : "Ajouter aux coups de cœur"}
+          {isFavorite ? t.book.favorite : t.book.addFavorite}
         </Text>
       </Pressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     gap: spacing.sm,
     paddingVertical: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: lightColors.border,
+    borderTopColor: colors.border,
   },
   readRow: {
     flexDirection: "row",
@@ -65,7 +73,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: lightColors.text,
+    color: colors.text,
   },
   favoriteButton: {
     flexDirection: "row",
@@ -73,7 +81,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     alignSelf: "flex-start",
     borderWidth: 1,
-    borderColor: lightColors.border,
+    borderColor: colors.border,
     borderRadius: radii.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
@@ -81,10 +89,11 @@ const styles = StyleSheet.create({
   },
   favoriteIcon: {
     fontSize: 18,
-    color: lightColors.danger,
+    color: colors.danger,
   },
   favoriteLabel: {
     fontSize: 13,
-    color: lightColors.text,
+    color: colors.text,
   },
-});
+  });
+}

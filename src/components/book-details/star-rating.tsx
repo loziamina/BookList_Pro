@@ -1,6 +1,9 @@
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { lightColors, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { spacing, type ThemeColors } from "@/theme/tokens";
 
 const STAR_VALUES = [1, 2, 3, 4, 5] as const;
 
@@ -11,6 +14,9 @@ type StarRatingProps = {
 };
 
 export function StarRating({ rating, onRate, isSaving }: StarRatingProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const roundedRating = rating !== null ? Math.round(rating) : 0;
 
   return (
@@ -26,7 +32,7 @@ export function StarRating({ rating, onRate, isSaving }: StarRatingProps) {
               disabled={isSaving}
               hitSlop={4}
               accessibilityRole="button"
-              accessibilityLabel={`Noter ${value} étoile${value > 1 ? "s" : ""} sur 5`}
+              accessibilityLabel={t.rating.rateAccessibilityLabel(value)}
               style={styles.starButton}
             >
               <Text style={[styles.star, isFilled && styles.starFilled]}>
@@ -37,13 +43,25 @@ export function StarRating({ rating, onRate, isSaving }: StarRatingProps) {
         })}
       </View>
       <Text style={styles.label}>
-        {rating !== null ? `${rating} / 5` : "Pas encore noté"}
+        {rating !== null ? `${rating} / 5` : t.rating.none}
       </Text>
+      {rating !== null && rating > 0 ? (
+        <Pressable
+          onPress={() => onRate(0)}
+          disabled={isSaving}
+          accessibilityRole="button"
+          accessibilityLabel={t.rating.clear}
+          style={styles.clearButton}
+        >
+          <Text style={styles.clearText}>{t.rating.clear}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
@@ -60,13 +78,23 @@ const styles = StyleSheet.create({
   },
   star: {
     fontSize: 22,
-    color: lightColors.border,
+    color: colors.border,
   },
   starFilled: {
-    color: lightColors.primary,
+    color: colors.primary,
   },
   label: {
     fontSize: 13,
-    color: lightColors.textMuted,
+    color: colors.textMuted,
   },
-});
+  clearButton: {
+    minHeight: 44,
+    justifyContent: "center",
+  },
+  clearText: {
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  });
+}

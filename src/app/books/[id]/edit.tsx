@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { BookDetailSkeleton } from "@/components/book-details/book-detail-skeleton";
@@ -8,11 +8,16 @@ import { isAppError } from "@/domain/app-error";
 import { BookFormData } from "@/domain/book";
 import { useBook } from "@/hooks/queries/use-book";
 import { useUpdateBook } from "@/hooks/queries/use-book-mutations";
-import { lightColors, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { spacing, type ThemeColors } from "@/theme/tokens";
 
 export default function EditBookScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const bookId = id ?? "";
 
   const { data: book, isLoading, isError, error, refetch } = useBook(bookId);
@@ -46,11 +51,11 @@ export default function EditBookScreen() {
         setSubmitError(
           isAppError(submissionError)
             ? submissionError.message
-            : "Une erreur inattendue est survenue.",
+            : t.common.unexpectedError,
         );
       }
     },
-    [book, updateBook, router],
+    [book, updateBook, router, t.common.unexpectedError],
   );
 
   // État : chargement
@@ -62,13 +67,13 @@ export default function EditBookScreen() {
   if (isError) {
     const message = isAppError(error)
       ? error.message
-      : "Une erreur inattendue est survenue.";
+      : t.common.unexpectedError;
 
     return (
       <View style={styles.centered}>
         <Text style={styles.errorText}>{message}</Text>
         <Text style={styles.retryLink} onPress={() => refetch()}>
-          Réessayer
+          {t.common.retry}
         </Text>
       </View>
     );
@@ -78,7 +83,7 @@ export default function EditBookScreen() {
   if (!book) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.centeredText}>Cet ouvrage est introuvable.</Text>
+        <Text style={styles.centeredText}>{t.common.bookNotFound}</Text>
       </View>
     );
   }
@@ -88,7 +93,7 @@ export default function EditBookScreen() {
     <View style={styles.container}>
       {submitError ? <Text style={styles.errorText}>{submitError}</Text> : null}
       <BookForm
-        submitLabel="Enregistrer"
+        submitLabel={t.book.save}
         defaultValues={{
           titre: book.titre,
           auteur: book.auteur,
@@ -103,11 +108,13 @@ export default function EditBookScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     padding: spacing.lg,
     gap: spacing.md,
+    backgroundColor: colors.background,
   },
   centered: {
     flex: 1,
@@ -115,19 +122,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: spacing.sm,
     padding: spacing.lg,
+    backgroundColor: colors.background,
   },
   centeredText: {
-    color: lightColors.textMuted,
+    color: colors.textMuted,
     fontSize: 14,
   },
   errorText: {
-    color: lightColors.danger,
+    color: colors.danger,
     fontSize: 14,
     textAlign: "center",
   },
   retryLink: {
-    color: lightColors.primary,
+    color: colors.primary,
     fontWeight: "600",
     fontSize: 14,
   },
-});
+  });
+}

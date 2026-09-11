@@ -10,9 +10,11 @@ describe("NoteForm", () => {
 
     await render(<NoteForm onSubmit={onSubmit} />);
 
-    await fireEvent.press(
-      screen.getByRole("button", { name: /ajouter la note/i }),
-    );
+    await act(async () => {
+      fireEvent.press(
+        screen.getByRole("button", { name: /ajouter la note/i }),
+      );
+    });
 
     expect(
       await screen.findByText("La note de lecture ne peut pas être vide."),
@@ -28,7 +30,9 @@ describe("NoteForm", () => {
     const tooLong = "a".repeat(1200);
     const input = screen.getByPlaceholderText("Écrire une note de lecture…");
 
-    await fireEvent.changeText(input, tooLong);
+    act(() => {
+      fireEvent.changeText(input, tooLong);
+    });
 
     expect(screen.getByText("1000 / 1000")).toBeTruthy();
   });
@@ -39,10 +43,14 @@ describe("NoteForm", () => {
     await render(<NoteForm onSubmit={onSubmit} />);
 
     const input = screen.getByPlaceholderText("Écrire une note de lecture…");
-    await fireEvent.changeText(input, "Une très bonne surprise.");
-    await fireEvent.press(
-      screen.getByRole("button", { name: /ajouter la note/i }),
-    );
+    act(() => {
+      fireEvent.changeText(input, "Une très bonne surprise.");
+    });
+    await act(async () => {
+      fireEvent.press(
+        screen.getByRole("button", { name: /ajouter la note/i }),
+      );
+    });
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({
@@ -67,10 +75,14 @@ describe("NoteForm", () => {
     await render(<NoteForm onSubmit={onSubmit} />);
 
     const input = screen.getByPlaceholderText("Écrire une note de lecture…");
-    await fireEvent.changeText(input, "Note en cours d'envoi.");
+    act(() => {
+      fireEvent.changeText(input, "Note en cours d'envoi.");
+    });
 
     const button = screen.getByRole("button", { name: /ajouter la note/i });
-    const firstPress = fireEvent.press(button);
+    act(() => {
+      fireEvent.press(button);
+    });
 
     await waitFor(() => {
       expect(screen.getByRole("button")).toBeDisabled();
@@ -79,6 +91,5 @@ describe("NoteForm", () => {
     await act(async () => {
       resolveSubmit();
     });
-    await firstPress;
   });
 });

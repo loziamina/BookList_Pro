@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Note } from "@/domain/note";
-import { lightColors, radii, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { radii, spacing, type ThemeColors } from "@/theme/tokens";
 
 type NoteCardProps = {
   note: Note;
@@ -11,23 +13,26 @@ type NoteCardProps = {
 };
 
 export function NoteCard({ note, onDelete, isDeleting }: NoteCardProps) {
+  const { t, formatDate } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [isConfirming, setIsConfirming] = useState(false);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.date}>{formatNoteDate(note.createdAt)}</Text>
+      <Text style={styles.date}>{formatDate(note.createdAt)}</Text>
       <Text style={styles.content}>{note.contenu}</Text>
 
       {isConfirming ? (
         <View style={styles.confirmRow}>
-          <Text style={styles.confirmMessage}>Supprimer cette note ?</Text>
+          <Text style={styles.confirmMessage}>{t.notes.deleteQuestion}</Text>
           <Pressable
             style={styles.linkButton}
             onPress={() => setIsConfirming(false)}
             disabled={isDeleting}
             accessibilityRole="button"
           >
-            <Text style={styles.linkButtonText}>Annuler</Text>
+            <Text style={styles.linkButtonText}>{t.common.cancel}</Text>
           </Pressable>
           <Pressable
             style={styles.linkButton}
@@ -36,7 +41,7 @@ export function NoteCard({ note, onDelete, isDeleting }: NoteCardProps) {
             accessibilityRole="button"
           >
             <Text style={styles.deleteButtonText}>
-              {isDeleting ? "Suppression…" : "Confirmer"}
+              {isDeleting ? t.notes.deleting : t.common.confirm}
             </Text>
           </Pressable>
         </View>
@@ -45,50 +50,39 @@ export function NoteCard({ note, onDelete, isDeleting }: NoteCardProps) {
           style={styles.deleteButton}
           onPress={() => setIsConfirming(true)}
           accessibilityRole="button"
-          accessibilityLabel="Supprimer la note"
+          accessibilityLabel={t.notes.deleteAccessibilityLabel}
         >
-          <Text style={styles.deleteButtonText}>Supprimer</Text>
+          <Text style={styles.deleteButtonText}>{t.notes.delete}</Text>
         </Pressable>
       )}
     </View>
   );
 }
 
-function formatNoteDate(isoDate: string): string {
-  const date = new Date(isoDate);
-
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     gap: spacing.xs,
     padding: spacing.md,
     borderRadius: radii.md,
     borderWidth: 1,
-    borderColor: lightColors.border,
-    backgroundColor: lightColors.surface,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   date: {
     fontSize: 12,
-    color: lightColors.textMuted,
+    color: colors.textMuted,
   },
   content: {
     fontSize: 14,
-    color: lightColors.text,
+    color: colors.text,
   },
   deleteButton: {
     alignSelf: "flex-start",
     marginTop: spacing.xs,
   },
   deleteButtonText: {
-    color: lightColors.danger,
+    color: colors.danger,
     fontSize: 13,
     fontWeight: "600",
   },
@@ -100,14 +94,15 @@ const styles = StyleSheet.create({
   },
   confirmMessage: {
     fontSize: 13,
-    color: lightColors.text,
+    color: colors.text,
   },
   linkButton: {
     paddingVertical: spacing.xs,
   },
   linkButtonText: {
-    color: lightColors.text,
+    color: colors.text,
     fontSize: 13,
     fontWeight: "600",
   },
-});
+  });
+}

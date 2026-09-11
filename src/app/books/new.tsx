@@ -1,15 +1,20 @@
 import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { BookForm } from "@/components/forms/book-form";
 import { isAppError } from "@/domain/app-error";
 import { BookFormData } from "@/domain/book";
 import { useCreateBook } from "@/hooks/queries/use-book-mutations";
-import { lightColors, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { spacing, type ThemeColors } from "@/theme/tokens";
 
 export default function NewBookScreen() {
   const router = useRouter();
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const createBook = useCreateBook();
 
   const [serverErrors, setServerErrors] = useState<Record<string, string>>();
@@ -32,18 +37,18 @@ export default function NewBookScreen() {
         setSubmitError(
           isAppError(submissionError)
             ? submissionError.message
-            : "Une erreur inattendue est survenue.",
+            : t.common.unexpectedError,
         );
       }
     },
-    [createBook, router],
+    [createBook, router, t.common.unexpectedError],
   );
 
   return (
     <View style={styles.container}>
       {submitError ? <Text style={styles.errorText}>{submitError}</Text> : null}
       <BookForm
-        submitLabel="Ajouter"
+        submitLabel={t.book.add}
         onSubmit={handleSubmit}
         serverErrors={serverErrors}
       />
@@ -51,15 +56,18 @@ export default function NewBookScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     padding: spacing.lg,
     gap: spacing.md,
+    backgroundColor: colors.background,
   },
   errorText: {
-    color: lightColors.danger,
+    color: colors.danger,
     fontSize: 14,
     textAlign: "center",
   },
-});
+  });
+}

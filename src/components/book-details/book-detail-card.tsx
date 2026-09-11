@@ -1,7 +1,10 @@
+import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Book } from "@/domain/book";
-import { lightColors, radii, spacing } from "@/theme/tokens";
+import { useI18n } from "@/providers/i18n-provider";
+import { useTheme } from "@/providers/theme-provider";
+import { radii, spacing, type ThemeColors } from "@/theme/tokens";
 
 type BookDetailCardProps = {
   book: Book;
@@ -9,29 +12,41 @@ type BookDetailCardProps = {
 };
 
 export function BookDetailCard({ book, onEditPress }: BookDetailCardProps) {
+  const { t } = useI18n();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{book.titre}</Text>
       <Text style={styles.subtitle}>{book.auteur}</Text>
 
       <View style={styles.metaRow}>
-        <MetaField label="Éditeur" value={book.editeur} />
-        <MetaField label="Année" value={String(book.annee)} />
+        <MetaField label={t.book.publisher} value={book.editeur} styles={styles} />
+        <MetaField label={t.book.year} value={String(book.annee)} styles={styles} />
       </View>
 
       <Pressable
         style={styles.editButton}
         onPress={onEditPress}
         accessibilityRole="button"
-        accessibilityLabel="Modifier l'ouvrage"
+        accessibilityLabel={t.book.editAccessibilityLabel}
       >
-        <Text style={styles.editButtonText}>Modifier</Text>
+        <Text style={styles.editButtonText}>{t.book.edit}</Text>
       </Pressable>
     </View>
   );
 }
 
-function MetaField({ label, value }: { label: string; value: string }) {
+function MetaField({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.metaField}>
       <Text style={styles.metaLabel}>{label}</Text>
@@ -40,18 +55,19 @@ function MetaField({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
   container: {
     gap: spacing.md,
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: lightColors.text,
+    color: colors.text,
   },
   subtitle: {
     fontSize: 16,
-    color: lightColors.textMuted,
+    color: colors.textMuted,
   },
   metaRow: {
     flexDirection: "row",
@@ -62,23 +78,24 @@ const styles = StyleSheet.create({
   },
   metaLabel: {
     fontSize: 12,
-    color: lightColors.textMuted,
+    color: colors.textMuted,
     textTransform: "uppercase",
   },
   metaValue: {
     fontSize: 16,
-    color: lightColors.text,
+    color: colors.text,
   },
   editButton: {
     marginTop: spacing.sm,
-    backgroundColor: lightColors.primary,
+    backgroundColor: colors.primary,
     borderRadius: radii.md,
     paddingVertical: spacing.md,
     alignItems: "center",
   },
   editButtonText: {
-    color: lightColors.primaryContrast,
+    color: colors.primaryContrast,
     fontWeight: "600",
     fontSize: 16,
   },
-});
+  });
+}
