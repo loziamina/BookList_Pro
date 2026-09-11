@@ -74,6 +74,22 @@ function createHttpError(status: number, payload: unknown): AppError {
   }
 
   // Mode chaos / surcharge : retryable pour TanStack Query.
+  if (status === 413) {
+    return {
+      type: "payload-too-large",
+      message: details?.message ?? "L'image est trop lourde.",
+      status,
+    };
+  }
+
+  if (status === 415) {
+    return {
+      type: "unsupported-media",
+      message: details?.message ?? "Ce format d'image n'est pas accepté.",
+      status,
+    };
+  }
+
   if (status === 503) {
     return { type: "network", message, retryable: true, status };
   }

@@ -36,6 +36,18 @@ export type AppError =
       status: 404;
     }
   | {
+      /** Image de couverture trop lourde (413). */
+      type: "payload-too-large";
+      message: string;
+      status: 413;
+    }
+  | {
+      /** Format d’image refusé (415). */
+      type: "unsupported-media";
+      message: string;
+      status: 415;
+    }
+  | {
       type: "unknown";
       message: string;
       status?: number;
@@ -47,6 +59,8 @@ const errorTypes = new Set<AppError["type"]>([
   "conflict",
   "auth",
   "not-found",
+  "payload-too-large",
+  "unsupported-media",
   "unknown",
 ]);
 
