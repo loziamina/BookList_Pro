@@ -1,13 +1,20 @@
+/**
+ * Erreurs applicatives.
+ * Le client HTTP convertit les codes HTTP en union discriminée sur `type`.
+ * L’UI peut alors brancher : toast réseau, champs 422, conflit 409, etc.
+ */
 export type AppError =
   | {
       type: "network";
       message: string;
+      /** true pour timeout / 503 / perte réseau → retry TanStack Query possible */
       retryable: boolean;
       status?: number;
     }
   | {
       type: "validation";
       message: string;
+      /** Map champ → message, pour React Hook Form (erreurs 422) */
       fields: Record<string, string>;
       status: 422;
     }
@@ -43,6 +50,7 @@ const errorTypes = new Set<AppError["type"]>([
   "unknown",
 ]);
 
+/** Garde de type : distingue une AppError d’une erreur JS quelconque. */
 export function isAppError(error: unknown): error is AppError {
   if (typeof error !== "object" || error === null || !("type" in error)) {
     return false;

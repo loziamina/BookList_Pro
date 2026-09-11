@@ -1,3 +1,8 @@
+/**
+ * Mutations optimistes favori / lu.
+ * Flux : onMutate (UI immédiate) → API → onError (rollback) → onSettled (resync).
+ * Patche à la fois le détail et toutes les listes en cache.
+ */
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Book } from "@/domain/book";
@@ -5,11 +10,13 @@ import { PaginatedResponse } from "@/domain/pagination";
 import { booksKeys } from "@/lib/query-keys";
 import { updateBook } from "@/services/api/books-api";
 
+/** Snapshot pour restaurer le cache si le PATCH échoue. */
 type OptimisticContext = {
   previousDetail?: Book;
   previousLists: [readonly unknown[], PaginatedResponse<Book> | undefined][];
 };
 
+/** Applique le patch localement et renvoie l’état précédent. */
 function patchBookCache(
   queryClient: ReturnType<typeof useQueryClient>,
   bookId: string,
@@ -43,6 +50,7 @@ function patchBookCache(
   return { previousDetail, previousLists };
 }
 
+/** Restaure le snapshot sauvegardé dans onMutate. */
 function restoreBookCache(
   queryClient: ReturnType<typeof useQueryClient>,
   bookId: string,
@@ -77,6 +85,7 @@ export function useToggleFavorite() {
       version?: number;
     }) => updateBook(id, { favori }, version),
     onMutate: async ({ id, favori }) => {
+      // Évite qu’un refetch concurrent écrase l’optimistic update.
       await queryClient.cancelQueries({ queryKey: booksKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: booksKeys.lists() });
       return patchBookCache(queryClient, id, { favori });

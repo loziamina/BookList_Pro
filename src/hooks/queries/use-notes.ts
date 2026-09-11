@@ -1,3 +1,6 @@
+/**
+ * Hook liste des notes d’un livre.
+ */
 import { useQuery } from "@tanstack/react-query";
 
 import { booksKeys } from "@/lib/query-keys";

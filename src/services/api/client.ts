@@ -1,3 +1,10 @@
+/**
+ * Client HTTP unique.
+ * - Une seule entrée pour fetch, timeout, parsing JSON
+ * - Validation Zod de chaque réponse succès
+ * - Mapping HTTP → AppError (422 champs, 409 conflit, 503 retryable…)
+ * - Annulation : timeout interne + signal TanStack Query (recherche / navigation)
+ */
 import { z } from "zod";
 
 import { AppError, isAppError } from "@/domain/app-error";
@@ -11,6 +18,7 @@ type CommonRequestOptions = {
   method?: HttpMethod;
   body?: unknown;
   headers?: Record<string, string>;
+  /** Signal Query / UI : annule la requête précédente (ex. nouvelle recherche). */
   signal?: AbortSignal;
 };
 
@@ -18,10 +26,12 @@ export type DataRequestOptions<T> = CommonRequestOptions & {
   schema: z.ZodType<T>;
 };
 
+/** DELETE / 204 : pas de corps à valider. */
 export type NoContentRequestOptions = CommonRequestOptions & {
   schema: null;
 };
 
+/** Forme d’erreur renvoyée par api-books-v2 (champs FR). */
 const apiErrorPayloadSchema = z.object({
   erreur: z.string().optional(),
   message: z.string().optional(),
@@ -30,6 +40,7 @@ const apiErrorPayloadSchema = z.object({
   versionAttendue: z.number().int().optional(),
 });
 
+/** Convertit un status HTTP + payload JSON en AppError typée. */
 function createHttpError(status: number, payload: unknown): AppError {
   const parsedPayload = apiErrorPayloadSchema.safeParse(payload);
   const details = parsedPayload.success ? parsedPayload.data : undefined;
@@ -62,6 +73,7 @@ function createHttpError(status: number, payload: unknown): AppError {
     };
   }
 
+  // Mode chaos / surcharge : retryable pour TanStack Query.
   if (status === 503) {
     return { type: "network", message, retryable: true, status };
   }
@@ -94,6 +106,7 @@ export function apiRequest<T>(options: DataRequestOptions<T>): Promise<T>;
 export async function apiRequest<T>(
   options: DataRequestOptions<T> | NoContentRequestOptions,
 ): Promise<T | void> {
+  // Contrôleur local : combine timeout + signal externe.
   const controller = new AbortController();
   let timedOut = false;
   const abortFromCaller = () => controller.abort(options.signal?.reason);
@@ -144,6 +157,7 @@ export async function apiRequest<T>(
       return;
     }
 
+    // Contrat strict : une réponse OK mais mal formée devient une AppError.
     const parsed = options.schema.safeParse(payload);
 
     if (!parsed.success) {

@@ -1,3 +1,8 @@
+/**
+ * Service REST des ouvrages.
+ * Couche fine au-dessus de `apiRequest` : chemins, query string, If-Match.
+ * Pas de logique UI ici — uniquement HTTP + Zod.
+ */
 import { BookFilters, bookFiltersSchema } from "@/domain/book-filters";
 import {
   Book,
@@ -14,10 +19,12 @@ import { apiRequest } from "./client";
 
 const paginatedBooksSchema = paginatedResponseSchema(bookSchema);
 
+/** Header de concurrence optimiste exigé par l’API sur PUT/PATCH. */
 function versionHeaders(version?: number): Record<string, string> | undefined {
   return version === undefined ? undefined : { "If-Match": String(version) };
 }
 
+/** Construit la query string à partir des filtres normalisés (Zod). */
 function buildBooksQuery(filters: BookFilters): string {
   const normalized = bookFiltersSchema.parse(filters);
   const params = new URLSearchParams({
@@ -37,6 +44,7 @@ function buildBooksQuery(filters: BookFilters): string {
   return params.toString();
 }
 
+/** GET /books — liste paginée (défaut 20 items). */
 export function getBooks(
   filters: BookFilters = {},
   signal?: AbortSignal,
@@ -48,6 +56,7 @@ export function getBooks(
   });
 }
 
+/** GET /books/:id */
 export function getBook(id: string, signal?: AbortSignal): Promise<Book> {
   return apiRequest({
     path: `/books/${encodeURIComponent(id)}`,
@@ -56,6 +65,7 @@ export function getBook(id: string, signal?: AbortSignal): Promise<Book> {
   });
 }
 
+/** POST /books */
 export function createBook(input: BookFormData): Promise<Book> {
   return apiRequest({
     path: "/books",
@@ -65,6 +75,7 @@ export function createBook(input: BookFormData): Promise<Book> {
   });
 }
 
+/** PUT /books/:id — remplacement complet + If-Match. */
 export function replaceBook(
   id: string,
   input: BookFormData,
@@ -79,6 +90,7 @@ export function replaceBook(
   });
 }
 
+/** PATCH /books/:id — patch partiel (favori, lu, note…). */
 export function updateBook(
   id: string,
   input: BookUpdate,
@@ -93,6 +105,7 @@ export function updateBook(
   });
 }
 
+/** DELETE /books/:id */
 export function deleteBook(id: string): Promise<void> {
   return apiRequest({
     path: `/books/${encodeURIComponent(id)}`,
