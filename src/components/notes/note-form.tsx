@@ -30,9 +30,14 @@ export function NoteForm({ onSubmit }: NoteFormProps) {
       return;
     }
 
-    await onSubmit(data);
-    reset({ contenu: "" });
-    setCharacterCount(0);
+    try {
+      await onSubmit(data);
+      reset({ contenu: "" });
+      setCharacterCount(0);
+    } catch {
+      // L'erreur est affichée par l'appelant ; on garde la saisie
+      // pour que rien ne soit perdu.
+    }
   });
 
   return (

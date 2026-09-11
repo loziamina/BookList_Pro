@@ -1,21 +1,14 @@
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Book } from "@/domain/book";
 import { lightColors, radii, spacing } from "@/theme/tokens";
 
 type BookDetailCardProps = {
   book: Book;
-  onToggleRead: (nextValue: boolean) => void;
-  isTogglingRead?: boolean;
   onEditPress: () => void;
 };
 
-export function BookDetailCard({
-  book,
-  onToggleRead,
-  isTogglingRead,
-  onEditPress,
-}: BookDetailCardProps) {
+export function BookDetailCard({ book, onEditPress }: BookDetailCardProps) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{book.titre}</Text>
@@ -24,16 +17,6 @@ export function BookDetailCard({
       <View style={styles.metaRow}>
         <MetaField label="Éditeur" value={book.editeur} />
         <MetaField label="Année" value={String(book.annee)} />
-      </View>
-
-      <View style={styles.statusRow}>
-        <Text style={styles.label}>Déjà lu</Text>
-        <Switch
-          value={book.lu}
-          onValueChange={onToggleRead}
-          disabled={isTogglingRead}
-          accessibilityLabel="Statut de lecture"
-        />
       </View>
 
       <Pressable
@@ -84,19 +67,6 @@ const styles = StyleSheet.create({
   },
   metaValue: {
     fontSize: 16,
-    color: lightColors.text,
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: lightColors.border,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
     color: lightColors.text,
   },
   editButton: {
