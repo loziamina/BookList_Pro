@@ -44,7 +44,7 @@ Créez un fichier `.env.local` à partir de `.env.example` :
 EXPO_PUBLIC_API_URL=http://localhost:3000
 ```
 
-Placez l'API fournie dans `api-books-v2/`, puis préparez-la :
+L'API est incluse dans le dépôt. Préparez-la après le clonage :
 
 ```bash
 cd api-books-v2
