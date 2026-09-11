@@ -36,7 +36,7 @@
   "devDependencies": {
     "@react-native/jest-preset": "^0.86.3",
     "@testing-library/react-native": "^13.3.3",
-    "@types/jest": "^30.0.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.2.2",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~57.0.2",
@@ -52,10 +52,23 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "jest --watchAll=false"
+    "test": "jest --watchAll=false",
+    "test:coverage": "jest --watchAll=false --coverage"
   },
   "jest": {
     "preset": "jest-expo",
+    "collectCoverageFrom": [
+      "src/domain/**/*.{ts,tsx}",
+      "src/services/**/*.{ts,tsx}"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 40,
+        "functions": 40,
+        "lines": 40,
+        "statements": 40
+      }
+    },
     "setupFilesAfterEnv": [],
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)"
